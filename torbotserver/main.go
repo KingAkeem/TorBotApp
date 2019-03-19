@@ -2,11 +2,12 @@ package main
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 
 	"github.com/gorilla/websocket"
+	"golang.org/x/net/html"
 	"golang.org/x/net/proxy"
 )
 
@@ -25,6 +26,28 @@ func createTorClient(protocol string, address string, port string) *http.Client 
 	return &http.Client{Transport: tr}
 }
 
+func getLinks(body io.Reader) []string {
+	tokenizer := html.NewTokenizer(body)
+	links := make([]string, 0)
+	for {
+		tt := tokenizer.Next()
+		switch tt {
+		case html.ErrorToken:
+			return links
+		case html.StartTagToken:
+			token := tokenizer.Token()
+			isLink := token.Data == "a"
+			if isLink {
+				for _, attr := range token.Attr {
+					if attr.Key == "href" {
+						links = append(links, attr.Val)
+					}
+				}
+			}
+		}
+	}
+}
+
 func getLinksHandler(w http.ResponseWriter, r *http.Request) {
 	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
 	conn, err := upgrader.Upgrade(w, r, nil)
@@ -38,12 +61,11 @@ func getLinksHandler(w http.ResponseWriter, r *http.Request) {
 		log.Fatalf("Error: %+v", err)
 	}
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	links := getLinks(resp.Body)
 	if err != nil {
 		log.Fatalf("Error: %+v", err)
 	}
-	bodyStr := string(body)
-	log.Printf("Response Body: %+v", bodyStr)
+	log.Printf("Links found: %+v", links)
 	conn.WriteMessage(websocket.TextMessage, []byte("Hello World."))
 }
 
