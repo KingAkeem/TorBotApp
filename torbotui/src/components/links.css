@@ -1,0 +1,18 @@
+.home-button {
+  font-weight: 900;
+  border-radius: 25px;
+  border-color: lime;
+  width: 70px;
+  height: 30px;
+  background-color: black;
+  color: lime;
+}
+.home-button:focus {
+  outline: none;
+}
+.good-link {
+  color: lime;
+}
+.bad-link {
+  color: red;
+}
