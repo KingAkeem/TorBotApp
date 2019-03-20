@@ -11,15 +11,14 @@ import MaterialHome from './materialhome';
 let ws;
 
 let id = 0;
-function createRow(link, status) {
+function createRow(Link, Status) {
     id += 1;
-    return {id, link, status};
+    return {id, Link, Status};
 }
 class MaterialLinks extends React.Component {
     constructor(props) {
         super(props);
         this.state = {linkStatus: [], home: false};
-        this.state.linkStatus.push(createRow('http://www.google.com', 'GOOD'));
         ws = new WebSocket('ws://127.0.0.1:8080/links?url=' + encodeURIComponent(props.url));
         ws.onmessage = this.handleMessage.bind(this); 
         this.onHome = this.onHome.bind(this);
@@ -30,7 +29,8 @@ class MaterialLinks extends React.Component {
     }
 
     handleMessage(msg) {
-        console.log(msg);    
+        const linkStatus = JSON.parse(msg.data);
+        this.setState({linkStatus: [...this.state.linkStatus, linkStatus]});
     }
 
     render() {
@@ -48,8 +48,8 @@ class MaterialLinks extends React.Component {
                         <TableBody>
                             {this.state.linkStatus.map(linkStatus => (
                                 <TableRow key={linkStatus.id}>
-                                    <TableCell>{linkStatus.link}</TableCell>
-                                    <TableCell>{linkStatus.status}</TableCell>
+                                    <TableCell>{linkStatus.Link}</TableCell>
+                                    <TableCell>{linkStatus.Status}</TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>

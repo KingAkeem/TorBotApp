@@ -1,0 +1,5 @@
+# JS Ignores
+node_modules
+build
+
+
