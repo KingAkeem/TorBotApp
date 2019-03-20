@@ -79,8 +79,8 @@ func getLinksHandler(w http.ResponseWriter, r *http.Request) {
 					log.Fatalf("Error: %+v", err)
 				}
 				msg := struct {
-					status string
-					link   string
+					Status string `json::"status"`
+					Link   string `json::"link"`
 				}{
 					resp.Status,
 					url,
