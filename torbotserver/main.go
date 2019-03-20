@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/asaskevich/govalidator"
 	"github.com/gorilla/websocket"
 	"golang.org/x/net/html"
 	"golang.org/x/net/proxy"
@@ -26,21 +27,21 @@ func createTorClient(protocol string, address string, port string) *http.Client 
 	return &http.Client{Transport: tr}
 }
 
-func getLinks(body io.Reader) []string {
+func getLinks(body io.Reader, dataCh chan<- string) {
 	tokenizer := html.NewTokenizer(body)
-	links := make([]string, 0)
 	for {
 		tt := tokenizer.Next()
 		switch tt {
 		case html.ErrorToken:
-			return links
+			close(dataCh)
+			return
 		case html.StartTagToken:
 			token := tokenizer.Token()
 			isLink := token.Data == "a"
 			if isLink {
 				for _, attr := range token.Attr {
-					if attr.Key == "href" {
-						links = append(links, attr.Val)
+					if govalidator.IsRequestURL(attr.Val) && attr.Key == "href" {
+						dataCh <- attr.Val
 					}
 				}
 			}
@@ -61,12 +62,37 @@ func getLinksHandler(w http.ResponseWriter, r *http.Request) {
 		log.Fatalf("Error: %+v", err)
 	}
 	defer resp.Body.Close()
-	links := getLinks(resp.Body)
+	ch := make(chan string)
+	go getLinks(resp.Body, ch)
 	if err != nil {
 		log.Fatalf("Error: %+v", err)
 	}
-	log.Printf("Links found: %+v", links)
-	conn.WriteMessage(websocket.TextMessage, []byte("Hello World."))
+	for {
+		select {
+		case url, open := <-ch:
+			if !open {
+				break
+			}
+			go func(url string) {
+				resp, err := client.Get(url)
+				if err != nil {
+					log.Fatalf("Error: %+v", err)
+				}
+				msg := struct {
+					status string
+					link   string
+				}{
+					resp.Status,
+					url,
+				}
+				msgStr, err := json.Marshal(msg)
+				if err != nil {
+					log.Fatalf("Error: %+v", err)
+				}
+				conn.WriteMessage(websocket.TextMessage, msgStr)
+			}(url)
+		}
+	}
 }
 
 func getInfoHandler(w http.ResponseWriter, r *http.Request) {
