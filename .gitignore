@@ -1,5 +1,5 @@
 # JS Ignores
-node_modules
+torbotui/node_modules
 build
 
 
