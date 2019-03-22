@@ -41,13 +41,15 @@ class MaterialLinks extends React.Component {
                     <Table>
                         <TableHead>
                             <TableRow>
+                                <TableCell>Index</TableCell>
                                 <TableCell>Link</TableCell>
                                 <TableCell>Status</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {this.state.linkStatus.map(linkStatus => (
+                            {this.state.linkStatus.map((linkStatus, idx) => (
                                 <TableRow key={linkStatus.id}>
+                                    <TableCell>{idx+1}</TableCell>
                                     <TableCell>{linkStatus.Link}</TableCell>
                                     <TableCell>{linkStatus.Status}</TableCell>
                                 </TableRow>

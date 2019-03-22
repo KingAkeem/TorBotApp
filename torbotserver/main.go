@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"sync"
 
 	"github.com/asaskevich/govalidator"
 	"github.com/gorilla/websocket"
@@ -67,6 +68,7 @@ func getLinksHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatalf("Error: %+v", err)
 	}
+	m := new(sync.Mutex)
 	for {
 		select {
 		case url, open := <-ch:
@@ -75,21 +77,22 @@ func getLinksHandler(w http.ResponseWriter, r *http.Request) {
 			}
 			go func(url string) {
 				resp, err := client.Get(url)
-				if err != nil {
-					log.Fatalf("Error: %+v", err)
-				}
 				msg := struct {
-					Status string `json::"status"`
 					Link   string `json::"link"`
-				}{
-					resp.Status,
-					url,
+					Status string `json::"status"`
+				}{Link: url}
+				if err != nil {
+					msg.Status = err.Error()
+				} else {
+					msg.Status = resp.Status
 				}
 				msgStr, err := json.Marshal(msg)
 				if err != nil {
 					log.Fatalf("Error: %+v", err)
 				}
+				m.Lock()
 				conn.WriteMessage(websocket.TextMessage, msgStr)
+				m.Unlock()
 			}(url)
 		}
 	}
