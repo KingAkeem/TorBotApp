@@ -25,6 +25,7 @@ class MaterialLinks extends React.Component {
     }
 
     onHome() {
+        ws.close();
         this.setState({home: true});
     }
 
