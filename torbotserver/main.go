@@ -50,13 +50,56 @@ func getLinks(body io.Reader, dataCh chan<- string) {
 	}
 }
 
-func getLinksHandler(w http.ResponseWriter, r *http.Request) {
-	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
-	conn, err := upgrader.Upgrade(w, r, nil)
+type WSConn struct {
+	sync.Mutex
+	conn *websocket.Conn
+}
+
+func (ws *WSConn) writeMessage(msg interface{}) {
+	msgStr, err := json.Marshal(msg)
 	if err != nil {
 		log.Fatalf("Error: %+v", err)
 	}
-	defer conn.Close()
+	ws.Lock()
+	ws.conn.WriteMessage(websocket.TextMessage, msgStr)
+	ws.Unlock()
+}
+
+func (conn *WSConn) Close() error {
+	return conn.conn.Close()
+}
+
+func upgradeConnection(w http.ResponseWriter, r *http.Request) (*WSConn, error) {
+	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
+	conn, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		return nil, err
+	}
+	websocketConn := &WSConn{conn: conn}
+	return websocketConn, err
+}
+
+type Message struct {
+	Link   string `json::"link"`
+	Status string `json::"status"`
+}
+
+func createLinkMessage(url string) (msg Message) {
+	resp, err := client.Get(url)
+	msg = Message{Link: url}
+	if err != nil {
+		msg.Status = err.Error()
+	} else {
+		msg.Status = resp.Status
+	}
+	return
+}
+
+const SempahoreCount = 10
+
+func getLinksHandler(w http.ResponseWriter, r *http.Request) {
+	ws, err := upgradeConnection(w, r)
+	defer ws.Close()
 	url := r.URL.Query().Get("url")
 	resp, err := client.Get(url)
 	if err != nil {
@@ -65,35 +108,19 @@ func getLinksHandler(w http.ResponseWriter, r *http.Request) {
 	defer resp.Body.Close()
 	ch := make(chan string)
 	go getLinks(resp.Body, ch)
-	if err != nil {
-		log.Fatalf("Error: %+v", err)
-	}
-	m := new(sync.Mutex)
+	semaphore := make(chan struct{}, SempahoreCount)
 	for {
 		select {
 		case url, open := <-ch:
 			if !open {
 				break
 			}
+			semaphore <- struct{}{}
 			go func(url string) {
-				resp, err := client.Get(url)
-				msg := struct {
-					Link   string `json::"link"`
-					Status string `json::"status"`
-				}{Link: url}
-				if err != nil {
-					msg.Status = err.Error()
-				} else {
-					msg.Status = resp.Status
-				}
-				msgStr, err := json.Marshal(msg)
-				if err != nil {
-					log.Fatalf("Error: %+v", err)
-				}
-				m.Lock()
-				conn.WriteMessage(websocket.TextMessage, msgStr)
-				m.Unlock()
+				msg := createLinkMessage(url)
+				ws.writeMessage(msg)
 			}(url)
+			<-semaphore
 		}
 	}
 }
