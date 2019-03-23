@@ -65,8 +65,8 @@ func (ws *WSConn) writeMessage(msg interface{}) {
 	ws.Unlock()
 }
 
-func (conn *WSConn) Close() error {
-	return conn.conn.Close()
+func (ws *WSConn) Close() error {
+	return ws.conn.Close()
 }
 
 func upgradeConnection(w http.ResponseWriter, r *http.Request) (*WSConn, error) {
@@ -109,19 +109,13 @@ func getLinksHandler(w http.ResponseWriter, r *http.Request) {
 	ch := make(chan string)
 	go getLinks(resp.Body, ch)
 	semaphore := make(chan struct{}, SempahoreCount)
-	for {
-		select {
-		case url, open := <-ch:
-			if !open {
-				break
-			}
-			semaphore <- struct{}{}
-			go func(url string) {
-				msg := createLinkMessage(url)
-				ws.writeMessage(msg)
-				<-semaphore
-			}(url)
-		}
+	for url := range ch {
+		semaphore <- struct{}{}
+		go func(url string) {
+			msg := createLinkMessage(url)
+			ws.writeMessage(msg)
+			<-semaphore
+		}(url)
 	}
 }
 
