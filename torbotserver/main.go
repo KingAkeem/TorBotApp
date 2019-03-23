@@ -95,7 +95,7 @@ func createLinkMessage(url string) (msg Message) {
 	return
 }
 
-const SempahoreCount = 10
+const SempahoreCount = 3
 
 func getLinksHandler(w http.ResponseWriter, r *http.Request) {
 	ws, err := upgradeConnection(w, r)
@@ -119,8 +119,8 @@ func getLinksHandler(w http.ResponseWriter, r *http.Request) {
 			go func(url string) {
 				msg := createLinkMessage(url)
 				ws.writeMessage(msg)
+				<-semaphore
 			}(url)
-			<-semaphore
 		}
 	}
 }
