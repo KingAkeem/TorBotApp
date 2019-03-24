@@ -130,11 +130,11 @@ func getLinksHandler(w http.ResponseWriter, r *http.Request) {
 	semaphore := newSemaphore(SempahoreCount)
 	for url := range ch {
 		semaphore.Lock()
-		go func(url string) {
+		go func() {
 			msg := createLinkMessage(url)
 			ws.writeMessage(msg)
 			semaphore.Unlock()
-		}(url)
+		}()
 	}
 }
 

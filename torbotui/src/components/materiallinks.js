@@ -11,9 +11,9 @@ import MaterialHome from './materialhome';
 let ws;
 
 let id = 0;
-function createRow(Link, Status) {
+function createRow(link, status) {
     id += 1;
-    return {id, Link, Status};
+    return {id, link, status};
 }
 class MaterialLinks extends React.Component {
     constructor(props) {
@@ -31,7 +31,7 @@ class MaterialLinks extends React.Component {
 
     handleMessage(msg) {
         const linkStatus = JSON.parse(msg.data);
-        this.setState({linkStatus: [...this.state.linkStatus, linkStatus]});
+        this.setState({linkStatus: [...this.state.linkStatus, createRow(linkStatus.Link, linkStatus.Status)]});
     }
 
     render() {
@@ -51,8 +51,8 @@ class MaterialLinks extends React.Component {
                             {this.state.linkStatus.map((linkStatus, idx) => (
                                 <TableRow key={linkStatus.id}>
                                     <TableCell>{idx+1}</TableCell>
-                                    <TableCell>{linkStatus.Link}</TableCell>
-                                    <TableCell>{linkStatus.Status}</TableCell>
+                                    <TableCell>{linkStatus.link}</TableCell>
+                                    <TableCell>{linkStatus.status}</TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>
