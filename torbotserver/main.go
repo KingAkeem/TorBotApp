@@ -55,7 +55,7 @@ type WSConn struct {
 	conn *websocket.Conn
 }
 
-func (ws *WSConn) writeMessage(msg interface{}) {
+func (ws *WSConn) writeMessage(msg Message) {
 	msgStr, err := json.Marshal(msg)
 	if err != nil {
 		log.Fatalf("Error: %+v", err)
@@ -95,10 +95,29 @@ func createLinkMessage(url string) (msg Message) {
 	return
 }
 
+type Semaphore struct {
+	locks chan struct{}
+}
+
+func (s *Semaphore) Lock() {
+	s.locks <- struct{}{}
+}
+
+func (s *Semaphore) Unlock() {
+	<-s.locks
+}
+
+func newSemaphore(resourceCount int) *Semaphore {
+	return &Semaphore{locks: make(chan struct{}, resourceCount)}
+}
+
 const SempahoreCount = 3
 
 func getLinksHandler(w http.ResponseWriter, r *http.Request) {
 	ws, err := upgradeConnection(w, r)
+	if err != nil {
+		log.Fatalf("Error: %+v", err)
+	}
 	defer ws.Close()
 	url := r.URL.Query().Get("url")
 	resp, err := client.Get(url)
@@ -108,13 +127,13 @@ func getLinksHandler(w http.ResponseWriter, r *http.Request) {
 	defer resp.Body.Close()
 	ch := make(chan string)
 	go getLinks(resp.Body, ch)
-	semaphore := make(chan struct{}, SempahoreCount)
+	semaphore := newSemaphore(SempahoreCount)
 	for url := range ch {
-		semaphore <- struct{}{}
+		semaphore.Lock()
 		go func(url string) {
 			msg := createLinkMessage(url)
 			ws.writeMessage(msg)
-			<-semaphore
+			semaphore.Unlock()
 		}(url)
 	}
 }
