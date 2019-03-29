@@ -5,6 +5,7 @@ import (
 	"io"
 	"strings"
 
+	"github.com/TorBotApp/server/lib/utils"
 	"golang.org/x/net/html"
 )
 
@@ -38,7 +39,7 @@ func GetEmails(body io.Reader, emailFeed chan<- string) {
 		case html.StartTagToken:
 			token := tokenizer.Token()
 			for _, attr := range token.Attr {
-				if strings.Contains(attr.Val, "mailto") {
+				if utils.IsEmail(attr) {
 					email := strings.Split(attr.Val, ":")[1]
 					emailFeed <- email
 				}

@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 
+	"golang.org/x/net/html"
 	"golang.org/x/net/proxy"
 )
 
@@ -20,6 +22,11 @@ func NewTorClient(protocol string, address string, port string) *http.Client {
 		Dial: dialer.Dial,
 	}
 	return &http.Client{Transport: tr}
+}
+
+// IsEmail determines if a given HTML attribute has an an email value.
+func IsEmail(htmlTag html.Attribute) bool {
+	return strings.Contains(htmlTag.Val, "mailto:")
 }
 
 // Semaphore controls number of resources being used
