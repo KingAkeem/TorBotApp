@@ -11,15 +11,15 @@ import MaterialHome from './materialhome';
 let ws;
 
 let id = 0;
-function createRow(email, status) {
+function createRow(email) {
     id += 1;
-    return {id, email, status};
+    return {id, email};
 }
-class MaterialLinks extends React.Component {
+class MaterialEmail extends React.Component {
     constructor(props) {
         super(props);
         this.state = {emails: [], home: false};
-        ws = new WebSocket('ws://127.0.0.1:8080/links?url=' + encodeURIComponent(props.url));
+        ws = new WebSocket('ws://127.0.0.1:8080/emails?url=' + encodeURIComponent(props.url));
         ws.onmessage = this.handleMessage.bind(this); 
         this.onHome = this.onHome.bind(this);
     }
@@ -30,8 +30,8 @@ class MaterialLinks extends React.Component {
     }
 
     handleMessage(msg) {
-        const linkStatus = JSON.parse(msg.data);
-        this.setState({linkStatus: [...this.state.linkStatus, createRow(linkStatus.Link, linkStatus.Status)]});
+        const email = JSON.parse(msg.data);
+        this.setState({emails: [...this.state.emails, createRow(email.email)]});
     }
 
     render() {
@@ -43,16 +43,14 @@ class MaterialLinks extends React.Component {
                         <TableHead>
                             <TableRow>
                                 <TableCell>Index</TableCell>
-                                <TableCell>Link</TableCell>
-                                <TableCell>Status</TableCell>
+                                <TableCell>Email</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {this.state.linkStatus.map((linkStatus, idx) => (
-                                <TableRow key={linkStatus.id}>
+                            {this.state.emails.map((email, idx) => (
+                                <TableRow key={email.id}>
                                     <TableCell>{idx+1}</TableCell>
-                                    <TableCell>{linkStatus.link}</TableCell>
-                                    <TableCell>{linkStatus.status}</TableCell>
+                                    <TableCell>{email.email}</TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>
@@ -67,4 +65,4 @@ class MaterialLinks extends React.Component {
     }
 }
 
-export default MaterialLinks;
+export default MaterialEmail;

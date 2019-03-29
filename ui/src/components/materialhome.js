@@ -4,6 +4,7 @@ import TextField from '@material-ui/core/TextField';
 import { withStyles } from '@material-ui/core/styles';
 import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
+import MaterialEmail from './materialemail';
 import MaterialInfo from './materialinfo';
 import MaterialLinks from './materiallinks';
 import './materialhome.css';
@@ -84,6 +85,7 @@ class MaterialHome extends React.Component {
         event.preventDefault();
         switch (this.state.option) {
             case LINKS:
+            case EMAILS:
                 this.setState({'submit': true});
                 break;
             case INFO:
@@ -96,11 +98,6 @@ class MaterialHome extends React.Component {
                         console.log(err);
                     });
                 break;
-            case EMAILS:
-                var ws = new WebSocket('ws://127.0.0.1:8080/emails?url=' + encodeURIComponent(this.state.url));
-                ws.onmessage = function(msg) {
-                    console.log(msg);
-                };
         }
     }
     
@@ -141,6 +138,8 @@ class MaterialHome extends React.Component {
                 return <MaterialInfo info={this.state.info}/>;
             case LINKS:
                 return <MaterialLinks url={this.state.url}/>;
+            case EMAILS:
+                return <MaterialEmail url={this.state.url}/>;
             default:
                 console.log('Invalid option.');
         }

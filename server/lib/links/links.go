@@ -24,14 +24,14 @@ func (l *LinkMessage) Read() ([]byte, int) {
 	return bytes, len(bytes)
 }
 
-// CreateLinkMessage generates a link message from a given url
-func CreateLinkMessage(url string, client *http.Client) *LinkMessage {
+// NewLinkMessage generates a link message from a given url
+func NewLinkMessage(url string, client *http.Client) *LinkMessage {
 	msg := &LinkMessage{Link: url}
 	resp, err := client.Get(url)
-	defer resp.Body.Close()
 	if err != nil {
 		msg.Status = err.Error()
 	} else {
+		defer resp.Body.Close()
 		msg.Status = resp.Status
 	}
 	return msg
