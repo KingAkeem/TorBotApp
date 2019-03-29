@@ -1,5 +1,8 @@
 # JS Ignores
-torbotui/node_modules
+node_modules
 build
+ 
+# Golang Ignores
+vendor
 
 
