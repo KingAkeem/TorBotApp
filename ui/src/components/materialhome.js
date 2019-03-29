@@ -28,6 +28,7 @@ const StyledSelect = withStyles({
 
 const LINKS = 'GET_LINKS';
 const INFO = 'GET_INFORMATION';
+const EMAILS = 'GET_EMAILS';
 
 function makeRequest(method, url, data) {
     return new Promise(function (resolve, reject) {
@@ -95,6 +96,11 @@ class MaterialHome extends React.Component {
                         console.log(err);
                     });
                 break;
+            case EMAILS:
+                var ws = new WebSocket('ws://127.0.0.1:8080/emails?url=' + encodeURIComponent(this.state.url));
+                ws.onmessage = function(msg) {
+                    console.log(msg);
+                };
         }
     }
     
@@ -121,6 +127,7 @@ class MaterialHome extends React.Component {
                     <StyledSelect value={this.state.option} onChange={this.handleSelectChange}>
                         <MenuItem value={LINKS}>Get Links</MenuItem>
                         <MenuItem value={INFO}>Get Information</MenuItem>
+                        <MenuItem value={EMAILS}>Get Emails</MenuItem>
                     </StyledSelect>
                     <br/>
                     <Button onClick={this.handleSubmit} variant="contained" color="primary">
@@ -135,7 +142,7 @@ class MaterialHome extends React.Component {
             case LINKS:
                 return <MaterialLinks url={this.state.url}/>;
             default:
-                console.log("Invalid option.");
+                console.log('Invalid option.');
         }
     }
 }

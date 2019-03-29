@@ -31,7 +31,7 @@ class MaterialLinks extends React.Component {
 
     handleMessage(msg) {
         const linkStatus = JSON.parse(msg.data);
-        this.setState({linkStatus: [...this.state.linkStatus, createRow(linkStatus.Link, linkStatus.Status)]});
+        this.setState({linkStatus: [...this.state.linkStatus, createRow(linkStatus.link, linkStatus.status)]});
     }
 
     render() {
