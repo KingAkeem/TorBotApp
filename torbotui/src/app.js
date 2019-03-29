@@ -1,5 +1,4 @@
 import React from 'react';
-import Home from './components/home';
 import MaterialHome from './components/materialhome';
 import './app.css';
 

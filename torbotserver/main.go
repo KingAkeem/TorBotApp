@@ -28,6 +28,41 @@ func createTorClient(protocol string, address string, port string) *http.Client 
 	return &http.Client{Transport: tr}
 }
 
+func getEmails(body io.Reader) {
+	tokenizer := html.NewTokenizer(body)
+	for {
+		tt := tokenizer.Next()
+		switch tt {
+		case html.ErrorToken:
+			return
+		case html.StartTagToken:
+			token := tokenizer.Token()
+			for _, attr := range token.Attr {
+				if govalidator.IsEmail(attr.Val) {
+					log.Printf("Valid email found: %+v\n", attr)
+				}
+			}
+		}
+	}
+}
+
+func getEmailsHandler(w http.ResponseWriter, r *http.Request) {
+	wsConn, err := upgradeConnection(w, r)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Fatal(err)
+	}
+	defer wsConn.Close()
+	url := r.URL.Query().Get("url")
+	resp, err := client.Get(url)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		log.Fatal(err)
+	}
+	defer resp.Body.Close()
+	w.Write([]byte("Finished"))
+}
+
 func getLinks(body io.Reader, dataCh chan<- string) {
 	tokenizer := html.NewTokenizer(body)
 	for {
@@ -116,13 +151,15 @@ const SempahoreCount = 3
 func getLinksHandler(w http.ResponseWriter, r *http.Request) {
 	ws, err := upgradeConnection(w, r)
 	if err != nil {
-		log.Fatalf("Error: %+v", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Fatal(err)
 	}
 	defer ws.Close()
 	url := r.URL.Query().Get("url")
 	resp, err := client.Get(url)
 	if err != nil {
-		log.Fatalf("Error: %+v", err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		log.Fatal(err)
 	}
 	defer resp.Body.Close()
 	ch := make(chan string)
@@ -130,11 +167,11 @@ func getLinksHandler(w http.ResponseWriter, r *http.Request) {
 	semaphore := newSemaphore(SempahoreCount)
 	for url := range ch {
 		semaphore.Lock()
-		go func() {
+		go func(url string) {
 			msg := createLinkMessage(url)
 			ws.writeMessage(msg)
 			semaphore.Unlock()
-		}()
+		}(url)
 	}
 }
 
@@ -144,18 +181,19 @@ func getInfoHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		log.Fatal(err)
 	}
 
 	json, err := json.Marshal(resp.Header)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		log.Fatal(err)
 	}
 	w.Write(json)
 }
 
 func main() {
+	http.HandleFunc("/emails", getEmailsHandler)
 	http.HandleFunc("/links", getLinksHandler)
 	http.HandleFunc("/info", getInfoHandler)
 	log.Print("Serving on port :8080\n")
