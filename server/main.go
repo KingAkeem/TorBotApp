@@ -2,17 +2,13 @@ package main
 
 import (
 	"encoding/json"
-	"io"
 	"log"
 	"net/http"
-	"strings"
 
 	"github.com/TorBotApp/server/lib/emails"
 	"github.com/TorBotApp/server/lib/links"
 	"github.com/TorBotApp/server/lib/utils"
 	"github.com/TorBotApp/server/lib/websocket"
-
-	"golang.org/x/net/html"
 )
 
 var client = utils.NewTorClient("tcp", "127.0.0.1", "9050")

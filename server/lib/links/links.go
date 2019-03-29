@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"strings"
 
 	"github.com/asaskevich/govalidator"
 	"golang.org/x/net/html"
@@ -51,7 +52,7 @@ func GetLinks(body io.Reader, urlFeed chan<- string) {
 			isLink := token.Data == "a"
 			if isLink {
 				for _, attr := range token.Attr {
-					if govalidator.IsRequestURL(attr.Val) && attr.Key == "href" {
+					if govalidator.IsRequestURL(attr.Val) && attr.Key == "href" && !strings.Contains(attr.Val, "mailto:") {
 						urlFeed <- attr.Val
 					}
 				}
