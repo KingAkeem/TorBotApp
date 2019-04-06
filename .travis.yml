@@ -1,7 +1,0 @@
-language: go
-go:
-    - master
-git:
-    submodules: false
-    depth: false
-script: go test -v -cover ./server/lib/emails
