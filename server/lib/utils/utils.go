@@ -24,11 +24,6 @@ func NewTorClient(protocol string, address string, port string) *http.Client {
 	return &http.Client{Transport: tr}
 }
 
-// IsEmail determines if a given HTML attribute has an an email value.
-func IsEmail(htmlTag html.Attribute) bool {
-	return strings.Contains(htmlTag.Val, "mailto:")
-}
-
 // Semaphore controls number of resources being used
 type Semaphore struct {
 	locks chan struct{}

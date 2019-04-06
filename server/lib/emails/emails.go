@@ -2,10 +2,10 @@ package emails
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"strings"
 
-	"github.com/TorBotApp/server/lib/utils"
 	"golang.org/x/net/html"
 )
 
@@ -27,11 +27,17 @@ func NewEmailMessage(email string) *EmailMessage {
 	return &EmailMessage{Email: email}
 }
 
+// IsEmail determines if a given HTML attribute has an an email value.
+func IsEmail(htmlTag html.Attribute) bool {
+	return strings.Contains(htmlTag.Val, "mailto:")
+}
+
 // GetEmails feeds a channel with emails found in the body
 func GetEmails(body io.Reader, emailFeed chan<- string) {
 	tokenizer := html.NewTokenizer(body)
 	for {
 		tt := tokenizer.Next()
+		fmt.Printf("Token: %+v", tt)
 		switch tt {
 		case html.ErrorToken:
 			close(emailFeed)
@@ -39,7 +45,7 @@ func GetEmails(body io.Reader, emailFeed chan<- string) {
 		case html.StartTagToken:
 			token := tokenizer.Token()
 			for _, attr := range token.Attr {
-				if utils.IsEmail(attr) {
+				if IsEmail(attr) {
 					email := strings.Split(attr.Val, ":")[1]
 					emailFeed <- email
 				}
