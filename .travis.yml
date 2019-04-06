@@ -2,8 +2,6 @@ language: go
 go:
     - master
 git:
+    submodules: false
     depth: false
-before_install:
-    - echo -e "machine github.com\n login $GITHUB_TOKEN" > ~/.netrc
-    - git lfs pull
 script: go test -v -cover ./server/lib/emails
