@@ -17,14 +17,14 @@ func getEmailsHandler(w http.ResponseWriter, r *http.Request) {
 	ws, err := websocket.UpgradeConnection(w, r)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		log.Fatal(err)
+		log.Print(err)
 	}
 	defer ws.Close()
 	url := r.URL.Query().Get("url")
 	resp, err := client.Get(url)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
-		log.Fatal(err)
+		log.Print(err)
 	}
 	defer resp.Body.Close()
 	ch := make(chan string)
@@ -43,14 +43,14 @@ func getLinksHandler(w http.ResponseWriter, r *http.Request) {
 	ws, err := websocket.UpgradeConnection(w, r)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		log.Fatal(err)
+		log.Print(err)
 	}
 	defer ws.Close()
 	url := r.URL.Query().Get("url")
 	resp, err := client.Get(url)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
-		log.Fatal(err)
+		log.Print(err)
 	}
 	defer resp.Body.Close()
 	ch := make(chan string)
@@ -72,13 +72,13 @@ func getInfoHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		log.Fatal(err)
+		log.Print(err)
 	}
 
 	json, err := json.Marshal(resp.Header)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		log.Fatal(err)
+		log.Print(err)
 	}
 	w.Write(json)
 }
