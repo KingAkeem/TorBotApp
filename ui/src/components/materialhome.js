@@ -57,6 +57,22 @@ function makeRequest(method, url, data) {
         });
 }
 
+function isValidUrl(str) {
+    var pattern = new RegExp('^(https?:\\/\\/)?'+ // protocol
+    '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|'+ // domain name
+    '((\\d{1,3}\\.){3}\\d{1,3}))'+ // OR ip (v4) address
+    '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*'+ // port and path
+    '(\\?[;&a-z\\d%_.~+=-]*)?'+ // query string
+    '(\\#[-a-z\\d_]*)?$','i'); // fragment locator
+    const valid = !!pattern.test(str);
+    try {
+        const url = new URL(str);
+        return valid;
+    } catch(_) {
+        return false;
+    }
+}
+
 function getInformation(url) {
     const promise = makeRequest('GET', 'http://127.0.0.1:8080/info?url=' + url)
         .then(responseObj => {
@@ -83,6 +99,10 @@ class MaterialHome extends React.Component {
 
     handleSubmit(event) {
         event.preventDefault();
+        if (!isValidUrl(this.state.url)) {
+            alert('Invalid URL');
+            return;
+        }
         switch (this.state.option) {
             case LINKS:
             case EMAILS:

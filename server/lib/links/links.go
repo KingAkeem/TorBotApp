@@ -5,7 +5,7 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/TorBotApp/server/lib/utils"
+	"github.com/TorBotApp/server/lib/emails"
 	"github.com/asaskevich/govalidator"
 	"golang.org/x/net/html"
 )
@@ -52,7 +52,7 @@ func GetLinks(body io.Reader, urlFeed chan<- string) {
 			isLink := token.Data == "a"
 			if isLink {
 				for _, attr := range token.Attr {
-					if govalidator.IsRequestURL(attr.Val) && attr.Key == "href" && !utils.IsEmail(attr) {
+					if govalidator.IsRequestURL(attr.Val) && attr.Key == "href" && !emails.IsEmail(attr) {
 						urlFeed <- attr.Val
 					}
 				}

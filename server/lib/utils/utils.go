@@ -4,9 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strings"
 
-	"golang.org/x/net/html"
 	"golang.org/x/net/proxy"
 )
 

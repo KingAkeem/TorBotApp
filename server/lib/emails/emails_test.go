@@ -2,11 +2,11 @@ package emails
 
 import (
 	"encoding/json"
+	"html/template"
 	"io/ioutil"
 	"log"
 	"os"
 	"testing"
-	"text/template"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -29,14 +29,13 @@ type MockEmails struct {
 	Emails []string
 }
 
-const htmlTemp = `<!DOCTYPE html><html>
+const htmlTemp = `<!DOCTYPE html>
+<html>
+	<title>This is a test file.</title>
 	<body>
-		<title>This is a test file.</title>
-		<p>
-			{{range .Emails}}
-			His email is <a href="mailto:{{.}}">{{.}}</a>
-			{{end}}
-		<p>
+		{{range .Emails}}
+			His email is <a href='mailto:{{.}}'>{{.}}</a>
+		{{end}}
 	</body>
 </html>
 `
@@ -65,5 +64,6 @@ func TestGetEmails(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error reading file, %+v", err)
 	}
-	log.Printf("File Contents:\n%+v\n", string(bytes))
+
+	log.Printf("File Contents:\n%+v\n", template.HTML(string(bytes)))
 }
