@@ -2,7 +2,6 @@ package emails
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"strings"
 
@@ -37,7 +36,6 @@ func GetEmails(body io.Reader, emailFeed chan<- string) {
 	tokenizer := html.NewTokenizer(body)
 	for {
 		tt := tokenizer.Next()
-		fmt.Printf("Token: %+v", tt)
 		switch tt {
 		case html.ErrorToken:
 			close(emailFeed)
