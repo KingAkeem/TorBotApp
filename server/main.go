@@ -19,8 +19,8 @@ var (
 )
 
 func init() {
-	address := os.Getenv("TORBOT_ADDRESS")
-	port := os.Getenv("TORBOT_PORT")
+	address := os.Getenv("TOR_ADDRESS")
+	port := os.Getenv("TOR_PORT")
 	client = utils.NewTorClient("tcp", address, port)
 	var err error
 	semaphoreCount, err = strconv.Atoi(os.Getenv("GET_LINKS_CONCURRENCY"))
