@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/TorBotApp/server/lib/emails"
 	"github.com/TorBotApp/server/lib/links"
@@ -11,7 +12,14 @@ import (
 	"github.com/TorBotApp/server/lib/websocket"
 )
 
-var client = utils.NewTorClient("tcp", "127.0.0.1", "9050")
+var client *http.Client
+
+func init() {
+	address := os.Getenv("TORBOT_ADDRESS")
+	port := os.Getenv("TORBOT_PORT")
+	client = utils.NewTorClient("tcp", address, port)
+
+}
 
 func getEmailsHandler(w http.ResponseWriter, r *http.Request) {
 	ws, err := websocket.UpgradeConnection(w, r)
