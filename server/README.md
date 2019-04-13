@@ -4,4 +4,4 @@ Technologies that you will need to be familiar with before contributing to TorBo
 
 Setup:
   - Install [dep](https://golang.github.io/dep/docs/installation.html) to get Golang dependencies. `dep ensure`
-  - Compile and start server by running `go run main.go` 
+  - Compile and start server by going to `dev` directory and running `./run_server.sh`
