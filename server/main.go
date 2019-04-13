@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 
 	"github.com/TorBotApp/server/lib/emails"
 	"github.com/TorBotApp/server/lib/links"
@@ -12,13 +13,20 @@ import (
 	"github.com/TorBotApp/server/lib/websocket"
 )
 
-var client *http.Client
+var (
+	client         *http.Client
+	semaphoreCount int
+)
 
 func init() {
 	address := os.Getenv("TORBOT_ADDRESS")
 	port := os.Getenv("TORBOT_PORT")
 	client = utils.NewTorClient("tcp", address, port)
-
+	var err error
+	semaphoreCount, err = strconv.Atoi(os.Getenv("GET_LINKS_CONCURRENCY"))
+	if err != nil {
+		log.Fatalf("Invalid number used for GET_LINKS_CONCURRENCY. Error: %+v", err)
+	}
 }
 
 func getEmailsHandler(w http.ResponseWriter, r *http.Request) {
@@ -45,8 +53,6 @@ func getEmailsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-const SempahoreCount = 5
-
 func getLinksHandler(w http.ResponseWriter, r *http.Request) {
 	ws, err := websocket.UpgradeConnection(w, r)
 	if err != nil {
@@ -63,7 +69,7 @@ func getLinksHandler(w http.ResponseWriter, r *http.Request) {
 	defer resp.Body.Close()
 	ch := make(chan string)
 	go links.GetLinks(resp.Body, ch)
-	semaphore := utils.NewSemaphore(SempahoreCount)
+	semaphore := utils.NewSemaphore(semaphoreCount)
 	for url := range ch {
 		semaphore.Lock()
 		go func(url string, client *http.Client) {
