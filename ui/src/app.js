@@ -1,14 +1,12 @@
 import React from 'react';
-import MaterialHome from './components/home';
+import Home from './components/home';
 
 /**
  * Entrypoint for TorBot app, displays home-page
  * @class App
  */
-class App extends React.Component {
+export default class App extends React.Component {
     render() {
-        return <MaterialHome/>;
+        return <Home/>;
     }
 }
-
-export default App;

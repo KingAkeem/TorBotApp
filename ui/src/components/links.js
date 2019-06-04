@@ -6,7 +6,7 @@ import TableHead from '@material-ui/core/TableHead';
 import TableCell from '@material-ui/core/TableCell';
 import Paper from '@material-ui/core/Paper';
 import Button from '@material-ui/core/Button';
-import MaterialHome from './home';
+import Home from './home';
 
 let ws;
 
@@ -15,7 +15,7 @@ function createRow(link, status) {
     id += 1;
     return {id, link, status};
 }
-class MaterialLinks extends React.Component {
+export default class Links extends React.Component {
     constructor(props) {
         super(props);
         this.state = {linkStatus: [], home: false};
@@ -35,7 +35,7 @@ class MaterialLinks extends React.Component {
     }
 
     render() {
-        if (this.state.home) return <MaterialHome/>;
+        if (this.state.home) return <Home/>;
         return (
             <form>
                 <Paper>
@@ -66,5 +66,3 @@ class MaterialLinks extends React.Component {
         );
     }
 }
-
-export default MaterialLinks;

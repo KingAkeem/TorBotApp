@@ -4,9 +4,9 @@ import TextField from '@material-ui/core/TextField';
 import { withStyles } from '@material-ui/core/styles';
 import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
-import MaterialEmail from './email';
-import MaterialInfo from './info';
-import MaterialLinks from './links';
+import Email from './email';
+import Info from './info';
+import Links from './links';
 import './home.css';
 
 const StyledTextField = withStyles({
@@ -87,7 +87,7 @@ function getInformation(url) {
     return promise; 
 }
 
-class MaterialHome extends React.Component {
+export default class Home extends React.Component {
     constructor(props) {
         super(props);
         this.state = {option: LINKS, url: '', info: null, submit: false};
@@ -155,15 +155,13 @@ class MaterialHome extends React.Component {
         }
         switch (this.state.option) {
             case INFO:
-                return <MaterialInfo info={this.state.info}/>;
+                return <Info info={this.state.info}/>;
             case LINKS:
-                return <MaterialLinks url={this.state.url}/>;
+                return <Links url={this.state.url}/>;
             case EMAILS:
-                return <MaterialEmail url={this.state.url}/>;
+                return <Email url={this.state.url}/>;
             default:
                 console.log('Invalid option.');
         }
     }
 }
-
-export default MaterialHome;

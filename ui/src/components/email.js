@@ -6,7 +6,7 @@ import TableHead from '@material-ui/core/TableHead';
 import TableCell from '@material-ui/core/TableCell';
 import Paper from '@material-ui/core/Paper';
 import Button from '@material-ui/core/Button';
-import MaterialHome from './home';
+import Home from './home';
 
 let ws;
 
@@ -15,7 +15,7 @@ function createRow(email) {
     id += 1;
     return {id, email};
 }
-class MaterialEmail extends React.Component {
+export default class Email extends React.Component {
     constructor(props) {
         super(props);
         this.state = {emails: [], home: false};
@@ -35,7 +35,7 @@ class MaterialEmail extends React.Component {
     }
 
     render() {
-        if (this.state.home) return <MaterialHome/>;
+        if (this.state.home) return <Home/>;
         return (
             <form>
                 <Paper>
@@ -64,5 +64,3 @@ class MaterialEmail extends React.Component {
         );
     }
 }
-
-export default MaterialEmail;

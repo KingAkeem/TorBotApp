@@ -5,7 +5,7 @@ import TableRow from '@material-ui/core/TableRow';
 import TableHead from '@material-ui/core/TableHead';
 import TableCell from '@material-ui/core/TableCell';
 import Paper from '@material-ui/core/Paper';
-import MaterialHome from './home';
+import Home from './home';
 import Button from '@material-ui/core/Button';
 
 let id = 0;
@@ -15,7 +15,7 @@ function createRow(header, value) {
 }
 
 
-class MaterialInfo extends React.Component {
+export default class Info extends React.Component {
     constructor(props) {
         super(props);
         this.state = {rows: [], home: false};
@@ -30,7 +30,7 @@ class MaterialInfo extends React.Component {
     }
 
     render() {
-        if (this.state.home) return <MaterialHome/>;
+        if (this.state.home) return <Home/>;
         return (
             <form>
                 <Paper>
@@ -59,5 +59,3 @@ class MaterialInfo extends React.Component {
         );
     }
 }
-
-export default MaterialInfo;
