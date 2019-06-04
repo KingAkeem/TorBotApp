@@ -1,5 +1,5 @@
 import React from 'react';
-import MaterialHome from './components/materialhome';
+import MaterialHome from './components/home';
 
 /**
  * Entrypoint for TorBot app, displays home-page

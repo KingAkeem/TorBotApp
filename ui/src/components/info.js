@@ -5,7 +5,7 @@ import TableRow from '@material-ui/core/TableRow';
 import TableHead from '@material-ui/core/TableHead';
 import TableCell from '@material-ui/core/TableCell';
 import Paper from '@material-ui/core/Paper';
-import MaterialHome from './materialhome';
+import MaterialHome from './home';
 import Button from '@material-ui/core/Button';
 
 let id = 0;

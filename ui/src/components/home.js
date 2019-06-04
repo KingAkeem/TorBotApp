@@ -4,10 +4,10 @@ import TextField from '@material-ui/core/TextField';
 import { withStyles } from '@material-ui/core/styles';
 import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
-import MaterialEmail from './materialemail';
-import MaterialInfo from './materialinfo';
-import MaterialLinks from './materiallinks';
-import './materialhome.css';
+import MaterialEmail from './email';
+import MaterialInfo from './info';
+import MaterialLinks from './links';
+import './home.css';
 
 const StyledTextField = withStyles({
     root: {
