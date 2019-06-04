@@ -8,6 +8,7 @@ import Email from './email';
 import Info from './info';
 import Links from './links';
 import makeRequest from '../lib/makeRequest';
+import isValidUrl from '../lib/isValidUrl';
 import './home.css';
 
 const StyledTextField = withStyles({
@@ -32,21 +33,6 @@ const LINKS = 'GET_LINKS';
 const INFO = 'GET_INFORMATION';
 const EMAILS = 'GET_EMAILS';
 
-function isValidUrl(str) {
-    var pattern = new RegExp('^(https?:\\/\\/)?'+ // protocol
-    '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|'+ // domain name
-    '((\\d{1,3}\\.){3}\\d{1,3}))'+ // OR ip (v4) address
-    '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*'+ // port and path
-    '(\\?[;&a-z\\d%_.~+=-]*)?'+ // query string
-    '(\\#[-a-z\\d_]*)?$','i'); // fragment locator
-    const valid = !!pattern.test(str);
-    try {
-        const url = new URL(str);
-        return valid;
-    } catch(_) {
-        return false;
-    }
-}
 
 function getInformation(url) {
     const promise = makeRequest('GET', 'http://127.0.0.1:8080/info?url=' + url)
