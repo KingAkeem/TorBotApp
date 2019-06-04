@@ -35,7 +35,7 @@ const EMAILS = 'GET_EMAILS';
 
 
 function getInformation(url) {
-    const promise = makeRequest('GET', 'http://127.0.0.1:8080/info?url=' + url)
+    return makeRequest('GET', 'http://127.0.0.1:8080/info?url=' + url)
         .then(responseObj => {
             const text = JSON.parse(responseObj.response);
             return {
@@ -45,7 +45,6 @@ function getInformation(url) {
         .catch(err => {
             return err;
         });
-    return promise; 
 }
 
 export default class Home extends React.Component {
