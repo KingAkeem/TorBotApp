@@ -7,6 +7,7 @@ import MenuItem from '@material-ui/core/MenuItem';
 import Email from './email';
 import Info from './info';
 import Links from './links';
+import makeRequest from '../lib/makeRequest';
 import './home.css';
 
 const StyledTextField = withStyles({
@@ -30,32 +31,6 @@ const StyledSelect = withStyles({
 const LINKS = 'GET_LINKS';
 const INFO = 'GET_INFORMATION';
 const EMAILS = 'GET_EMAILS';
-
-function makeRequest(method, url, data) {
-    return new Promise(function (resolve, reject) {
-            const xhr = new XMLHttpRequest();
-            xhr.open(method, url);
-            xhr.onload = function() {
-                if (this.status >= 200 && this.status < 300) {
-                    resolve({
-                        response: xhr.response
-                    });
-                } else {
-                    reject({
-                        status: this.status,
-                        statusText: xhr.statusText
-                    });
-                }
-            };
-            xhr.onerror = function() {
-                reject({
-                    status: this.status,
-                    statusText: xhr.statusText
-                });
-            };
-            xhr.send(JSON.stringify(data));
-        });
-}
 
 function isValidUrl(str) {
     var pattern = new RegExp('^(https?:\\/\\/)?'+ // protocol
