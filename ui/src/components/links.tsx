@@ -7,18 +7,29 @@ import TableCell from '@material-ui/core/TableCell';
 import Paper from '@material-ui/core/Paper';
 import Button from '@material-ui/core/Button';
 import Home from './home';
+import { LinkProps } from '@material-ui/core/Link';
 
-let ws;
+let ws: WebSocket;
 
 let id = 0;
-function createRow(link, status) {
+function createRow(link: string, status: string) {
     id += 1;
     return {id, link, status};
 }
-export default class Links extends React.Component {
-    constructor(props) {
+
+type LinksProp  = {
+    url: string
+}
+
+type LinksState = {
+    linkData: Array<{id: number, link: string, status: string}>,
+    home: boolean
+}
+
+export default class Links extends React.Component<LinksProp, LinksState> {
+    constructor(props: LinksProp) {
         super(props);
-        this.state = {linkStatus: [], home: false};
+        this.state = {linkData: [], home: false};
         ws = new WebSocket('ws://127.0.0.1:8080/links?url=' + encodeURIComponent(props.url));
         ws.onmessage = this.handleMessage.bind(this); 
         this.onHome = this.onHome.bind(this);
@@ -29,9 +40,9 @@ export default class Links extends React.Component {
         this.setState({home: true});
     }
 
-    handleMessage(msg) {
-        const linkStatus = JSON.parse(msg.data);
-        this.setState({linkStatus: [...this.state.linkStatus, createRow(linkStatus.link, linkStatus.status)]});
+    handleMessage(msg: MessageEvent) {
+        const data = JSON.parse(msg.data);
+        this.setState({linkData: [...this.state.linkData, createRow(data.link, data.status)]});
     }
 
     render() {
@@ -48,11 +59,11 @@ export default class Links extends React.Component {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {this.state.linkStatus.map((linkStatus, idx) => (
-                                <TableRow key={linkStatus.id}>
+                            {this.state.linkData.map((linkData, idx) => (
+                                <TableRow key={linkData.id}>
                                     <TableCell>{idx+1}</TableCell>
-                                    <TableCell>{linkStatus.link}</TableCell>
-                                    <TableCell>{linkStatus.status}</TableCell>
+                                    <TableCell>{linkData.link}</TableCell>
+                                    <TableCell>{linkData.status}</TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>
