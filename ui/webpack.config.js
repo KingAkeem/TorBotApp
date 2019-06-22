@@ -8,7 +8,7 @@ const extensions = ['.js', '.jsx', '.json', '.ts', '.tsx'];
 module.exports = {
     target: 'electron-renderer',
 
-    entry: ['./src/renderer.js'],
+    entry: ['./src/renderer.tsx'],
 
     output: {
         path: path.resolve(__dirname, 'dist'),
