@@ -9,18 +9,26 @@ import Home from './home';
 import Button from '@material-ui/core/Button';
 
 let id = 0;
-function createRow(header, value) {
+function createRow(header: string, value: string) {
     id += 1;
     return {id, header, value};
 }
 
+type InfoProps = {
+    info: Map<string, string> 
+}
 
-export default class Info extends React.Component {
-    constructor(props) {
+type InfoState = {
+    rows: Array<{id: number, header: string, value: string}>,
+    home: boolean
+}
+
+export default class Info extends React.Component<InfoProps, InfoState> {
+    constructor(props: InfoProps) {
         super(props);
         this.state = {rows: [], home: false};
-        for (const header in props.info) {
-            this.state.rows.push(createRow(header, props.info[header]));
+        for (const header in props.info.keys()) {
+            this.state.rows.push(createRow(header, props.info.get(header)));
         }
         this.onHome = this.onHome.bind(this);
     } 

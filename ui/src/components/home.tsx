@@ -119,7 +119,7 @@ export default class Home extends React.Component<HomeProps, HomeState> {
         }
         switch (this.state.option) {
             case INFO:
-                return <Info info={this.state.info}/>;
+                return <Info info={new Map(Object.entries(this.state.info))}/>;
             case LINKS:
                 return <Links url={this.state.url}/>;
             case EMAILS:
