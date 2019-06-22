@@ -8,15 +8,24 @@ import Paper from '@material-ui/core/Paper';
 import Button from '@material-ui/core/Button';
 import Home from './home';
 
-let ws;
-
+let ws: WebSocket;
 let id = 0;
-function createRow(email) {
+function createRow(email: string) {
     id += 1;
     return {id, email};
 }
-export default class Email extends React.Component {
-    constructor(props) {
+
+type EmailProps = {
+    url: string
+}
+
+type EmailState = {
+    emails: Array<{email: string, id: number}>,
+    home: boolean
+}
+
+export default class Email extends React.Component<EmailProps, EmailState> {
+    constructor(props: EmailProps) {
         super(props);
         this.state = {emails: [], home: false};
         ws = new WebSocket('ws://127.0.0.1:8080/emails?url=' + encodeURIComponent(props.url));
@@ -29,9 +38,9 @@ export default class Email extends React.Component {
         this.setState({home: true});
     }
 
-    handleMessage(msg) {
-        const email = JSON.parse(msg.data);
-        this.setState({emails: [...this.state.emails, createRow(email.email)]});
+    handleMessage(msg: MessageEvent) {
+        const data = JSON.parse(msg.data);
+        this.setState({emails: [...this.state.emails, createRow(data.email)]});
     }
 
     render() {
@@ -47,10 +56,10 @@ export default class Email extends React.Component {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {this.state.emails.map((email, idx) => (
-                                <TableRow key={email.id}>
+                            {this.state.emails.map((data, idx) => (
+                                <TableRow key={data.id}>
                                     <TableCell>{idx+1}</TableCell>
-                                    <TableCell>{email.email}</TableCell>
+                                    <TableCell>{data.email}</TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>
