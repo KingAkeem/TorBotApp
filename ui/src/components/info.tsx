@@ -14,6 +14,14 @@ function createRow(header: string, value: string) {
     return {id, header, value};
 }
 
+const convertInfoToRows = (info: Map<string, string>) => {
+    const headerRows = new Array(info.size);
+    for (const header of info.keys()) {
+        headerRows.push(createRow(header, info.get(header)));
+    }
+    return headerRows;
+};
+
 type InfoProps = {
     info: Map<string, string> 
 }
@@ -26,10 +34,7 @@ type InfoState = {
 export default class Info extends React.Component<InfoProps, InfoState> {
     constructor(props: InfoProps) {
         super(props);
-        this.state = {rows: [], home: false};
-        for (const header in props.info.keys()) {
-            this.state.rows.push(createRow(header, props.info.get(header)));
-        }
+        this.state = {rows: convertInfoToRows(props.info), home: false};
         this.onHome = this.onHome.bind(this);
     } 
 
