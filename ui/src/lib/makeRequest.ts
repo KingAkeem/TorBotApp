@@ -1,12 +1,7 @@
 /**
  * This function provides a simple interface to perform a HTTP request.
- *
- * @param {string} method - the type of request to perform. e.g. GET, POST, PUT, etc.
- * @param {string} url - the url of the resource.
- * @param {Object} data - data to be sent as body
- * @returns {Promise}
  */
-export default function (method, url, data) {
+export default function (method: string, url: string, data?: string) {
     return new Promise(function (resolve, reject) {
             const xhr = new XMLHttpRequest();
             xhr.open(method, url);
