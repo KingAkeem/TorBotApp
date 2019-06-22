@@ -28,6 +28,7 @@
   ],
   "devDependencies": {
     "@babel/preset-env": "^7.1.0",
+    "@fortawesome/fontawesome-common-types": "^0.2.19",
     "@fortawesome/fontawesome-svg-core": "^1.2.8",
     "@fortawesome/free-brands-svg-icons": "^5.5.0",
     "@fortawesome/free-regular-svg-icons": "^5.5.0",

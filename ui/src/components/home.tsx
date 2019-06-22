@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { KeyboardEvent, ReactNode, MouseEvent } from 'react';
 import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
 import { withStyles } from '@material-ui/core/styles';
@@ -33,31 +33,35 @@ const LINKS = 'GET_LINKS';
 const INFO = 'GET_INFORMATION';
 const EMAILS = 'GET_EMAILS';
 
-
-function getInformation(url) {
+function getInformation(url: string): Promise<object> {
     return makeRequest('GET', 'http://127.0.0.1:8080/info?url=' + url)
-        .then(responseObj => {
-            const text = JSON.parse(responseObj.response);
-            return {
-                'text': text
-            };
+        .then((responseObj: XMLHttpRequest)  => {
+            return JSON.parse(responseObj.response);
         })
-        .catch(err => {
-            return err;
+        .catch((err: Error) => {
+            throw err;
         });
 }
 
-export default class Home extends React.Component {
-    constructor(props) {
+type HomeState = {
+    option: string,
+    url: string,
+    info: object,
+    submit: boolean
+};
+
+type HomeProps = {};
+
+export default class Home extends React.Component<HomeProps, HomeState> {
+    constructor(props: HomeProps) {
         super(props);
-        this.state = {option: LINKS, url: '', info: null, submit: false};
-        this.handleTextChange = this.handleTextChange.bind(this);
+        this.state = {option: LINKS, url: '', info: null, submit: false}; this.handleTextChange = this.handleTextChange.bind(this);
         this.handleSelectChange = this.handleSelectChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
         this.keyPress = this.keyPress.bind(this);
     }
 
-    handleSubmit(event) {
+    handleSubmit(event:  MouseEvent) {
         event.preventDefault();
         if (!isValidUrl(this.state.url)) {
             alert('Invalid URL');
@@ -71,7 +75,7 @@ export default class Home extends React.Component {
             case INFO:
                 getInformation(this.state.url)
                     .then(info => {
-                        this.setState({'info': info.text});
+                        this.setState({'info': info});
                         this.setState({'submit': true});
                     })
                     .catch(err => {
@@ -81,17 +85,17 @@ export default class Home extends React.Component {
         }
     }
     
-    handleTextChange(event) {
+    handleTextChange(event: React.ChangeEvent<HTMLInputElement>) {
         this.setState({url: event.target.value});
     }
 
-    handleSelectChange(event) {
+    handleSelectChange(event: React.ChangeEvent<HTMLSelectElement>, child: ReactNode) {
         this.setState({option: event.target.value});
     }
 
-    keyPress(event) {
+    keyPress(event: KeyboardEvent) {
         if (event.key === 'Enter') {
-            this.handleSubmit(event);
+            this.handleSubmit(event as unknown as MouseEvent);
         }
     }
 
