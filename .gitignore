@@ -1,6 +1,6 @@
 # JS Ignores
 node_modules
-build
+dist
  
 # Golang Ignores
 vendor

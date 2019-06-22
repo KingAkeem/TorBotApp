@@ -11,12 +11,12 @@ module.exports = {
 
     watch: true,
 
-    target: 'electron-main',
+    target: 'electron-renderer',
 
     entry: ['./src/renderer.js'],
 
     output: {
-        path: __dirname + '/build',
+        path: path.resolve(__dirname, 'dist'),
         filename: 'bundle.js'
     },
 

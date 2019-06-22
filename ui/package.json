@@ -19,7 +19,7 @@
     "electron": "electron ."
   },
   "homepage": "./",
-  "main": "src/electron-main.js",
+  "main": "src/main.js",
   "browserslist": [
     ">0.2%",
     "not dead",
