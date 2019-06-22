@@ -4,7 +4,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractTextPlugin = require('mini-css-extract-plugin');
 const path = require('path');
 
-const extensions = ['.js', '.jsx', '.json'];
+const extensions = ['.js', '.jsx', '.json', '.ts', '.tsx'];
 module.exports = {
     target: 'electron-renderer',
 
@@ -15,8 +15,19 @@ module.exports = {
         filename: 'bundle.js'
     },
 
+    devtool: 'source-map',
+
     module: {
         rules: [
+            {
+                test: /\.tsx?$/,
+                loader: 'awesome-typescript-loader'
+            },
+            {
+                enforce: 'pre',
+                test: /\.js$/,
+                loader: 'source-map-loader'
+            },
             {
                 test: /\.jsx?$/,
                 loader: 'babel-loader',
