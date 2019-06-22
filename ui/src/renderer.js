@@ -11,4 +11,3 @@ import App from './app';
 library.add(faSpinner);
 dom.watch();
 ReactDOM.render(<App/>, document.getElementById('root'));
-

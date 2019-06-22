@@ -1,16 +1,11 @@
-const MiniCssExtractTextPlugin = require('mini-css-extract-plugin');
 const createElectronReloadWebpackPlugin = require('electron-reload-webpack-plugin');
-const ElectronReloadWebpackPlugin = createElectronReloadWebpackPlugin({
-    path: './',
-    logLevel: 0
-});
+const ElectronReloadWebpackPlugin = createElectronReloadWebpackPlugin({ path: './', logLevel: 0 });
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-
+const MiniCssExtractTextPlugin = require('mini-css-extract-plugin');
 const path = require('path');
+
+const extensions = ['.js', '.jsx', '.json'];
 module.exports = {
-
-    watch: true,
-
     target: 'electron-renderer',
 
     entry: ['./src/renderer.js'],
@@ -32,10 +27,10 @@ module.exports = {
             {
                 test: /\.css$/,
                 use: [
-                {
-                    loader: MiniCssExtractTextPlugin.loader
-                },
-                'css-loader'
+                    { 
+                        loader: MiniCssExtractTextPlugin.loader 
+                    },
+                    'css-loader'
                 ]
             },
             {
@@ -61,7 +56,6 @@ module.exports = {
     ],
 
     resolve: {
-      extensions: ['.js', '.json', '.jsx']
+      extensions: extensions 
     }
-
 };
