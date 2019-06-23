@@ -9,6 +9,7 @@ import Button from '@material-ui/core/Button';
 import Home from './home';
 import { LinkProps } from '@material-ui/core/Link';
 import makeRequest from '../lib/makeRequest';
+import isValidUrl from '../lib/isValidUrl';
 
 
 let id = 0;
@@ -50,9 +51,11 @@ const getLinks = (url: string, scope: any) => {
             const body = response.responseText;
             const links = parseLinks(body);     
             links.forEach(link => {
+                if (!isValidUrl(link)) return;
                 makeRequest('GET', link)
                     .then(resp => {
-                        scope.setState({linkData: [...scope.state.linkData, {link: resp.origin, status: `${resp.status}  ${resp.statusText}`}]});
+                        const data = createRow(resp.origin, `${resp.status}  ${resp.statusText}`);
+                        scope.setState({linkData: [...scope.state.linkData, data]});
                     })
                     .catch(e => console.error(e));
             });
