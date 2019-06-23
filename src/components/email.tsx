@@ -34,12 +34,6 @@ const parseEmails = (html: string) => {
     return emails;
 };
 
-const getEmails = (url: string, scope: any) => {
-    makeTorRequest(url)
-        .then(response => scope.setState({emails: parseEmails(response.body)}))
-        .catch(error => console.error(error));
-};
-
 type EmailProps = {
     url: string
 }
@@ -53,12 +47,18 @@ export default class Email extends React.Component<EmailProps, EmailState> {
     constructor(props: EmailProps) {
         super(props);
         this.state = {emails: [], home: false};
-        getEmails(props.url, this);
         this.onHome = this.onHome.bind(this);
+        this.onInit(props);
     }
 
     onHome() {
         this.setState({home: true});
+    }
+
+    onInit(props: EmailProps) {
+        makeTorRequest(props.url)
+            .then(response => this.setState({emails: parseEmails(response.body)}))
+            .catch(error => console.error(error));
     }
 
     render() {

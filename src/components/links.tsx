@@ -45,34 +45,34 @@ const parseLinks = (html: string) => {
     return links;
 }
 
-const getLinks = (url: string, scope: any) => {
-    makeRequest('GET', url)
-        .then(response => {
-            const body = response.responseText;
-            const links = parseLinks(body);     
-            links.forEach(link => {
-                if (!isValidUrl(link)) return;
-                makeRequest('GET', link)
-                    .then(resp => {
-                        const data = createRow(resp.origin, `${resp.status}  ${resp.statusText}`);
-                        scope.setState({linkData: [...scope.state.linkData, data]});
-                    })
-                    .catch(e => console.error(e));
-            });
-        })
-        .catch(e => console.error(e));
-}
-
 export default class Links extends React.Component<LinksProp, LinksState> {
     constructor(props: LinksProp) {
         super(props);
         this.state = {linkData: new Array(), home: false};
-        getLinks(props.url, this);
         this.onHome = this.onHome.bind(this);
+        this.onInit(props);
     }
 
     onHome() {
         this.setState({home: true});
+    }
+
+    onInit(props: LinksProp) {
+        makeRequest('GET', props.url)
+            .then(response => {
+                const body = response.responseText;
+                const links = parseLinks(body);     
+                links.forEach(link => {
+                    if (!isValidUrl(link)) return;
+                    makeRequest('GET', link)
+                        .then(resp => {
+                            const data = createRow(resp.origin, `${resp.status}  ${resp.statusText}`);
+                            this.setState({linkData: [...this.state.linkData, data]});
+                        })
+                        .catch(e => console.error(e));
+                });
+            })
+            .catch(e => console.error(e));
     }
 
     render() {
