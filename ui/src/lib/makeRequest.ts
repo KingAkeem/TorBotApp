@@ -1,7 +1,7 @@
 /**
  * This function provides a simple interface to perform a HTTP request.
  */
-export default function (method: string, url: string, data?: string): Promise<AjaxRequest> {
+export default function (method: string, url: string, data?: string): Promise<OriginRequest> {
     return new Promise(function (resolve, reject) {
             const xhr = new XMLHttpRequest();
             xhr.open(method, url);

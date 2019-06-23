@@ -1,1 +1,0 @@
-type AjaxRequest = XMLHttpRequest & {origin: string};

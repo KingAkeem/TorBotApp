@@ -1,0 +1,1 @@
+type OriginRequest = XMLHttpRequest & {origin: string};
