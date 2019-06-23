@@ -9,7 +9,7 @@ import Home from './home';
 import Button from '@material-ui/core/Button';
 
 let id = 0;
-function createRow(header: string, value: string) {
+const createRow = (header: string, value: string) => {
     id += 1;
     return {id, header, value};
 }

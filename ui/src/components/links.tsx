@@ -8,11 +8,11 @@ import Paper from '@material-ui/core/Paper';
 import Button from '@material-ui/core/Button';
 import Home from './home';
 import { LinkProps } from '@material-ui/core/Link';
+import makeRequest from '../lib/makeRequest';
 
-let ws: WebSocket;
 
 let id = 0;
-function createRow(link: string, status: string) {
+const createRow = (link: string, status: string) => {
     id += 1;
     return {id, link, status};
 }
@@ -26,23 +26,50 @@ type LinksState = {
     home: boolean
 }
 
+const parseLinks = (html: string) => {
+    const parser = new DOMParser();
+    const dom = parser.parseFromString(html, 'text/html');
+    const tags = dom.getElementsByTagName('a');
+    const links = new Array();
+    for (let i = 0; i < tags.length; i++) {
+        const item = tags.item(i);
+        const attrs = item.attributes;
+        for (let j = 0; j < attrs.length; j++) {
+            if (attrs[j].nodeName === 'href') {
+                const link = attrs[j].nodeValue;
+                links.push(link);
+            }
+        }
+    }
+    return links;
+}
+
+const getLinks = (url: string, scope: any) => {
+    makeRequest('GET', url)
+        .then(response => {
+            const body = response.responseText;
+            const links = parseLinks(body);     
+            links.forEach(link => {
+                makeRequest('GET', link)
+                    .then(resp => {
+                        scope.setState({linkData: [...scope.state.linkData, {link: resp.origin, status: resp.statusText}]});
+                    })
+                    .catch(e => console.warn(e));
+            });
+        })
+        .catch(e => console.error(e));
+}
+
 export default class Links extends React.Component<LinksProp, LinksState> {
     constructor(props: LinksProp) {
         super(props);
-        this.state = {linkData: [], home: false};
-        ws = new WebSocket('ws://127.0.0.1:8080/links?url=' + encodeURIComponent(props.url));
-        ws.onmessage = this.handleMessage.bind(this); 
+        this.state = {linkData: new Array(), home: false};
+        getLinks(props.url, this);
         this.onHome = this.onHome.bind(this);
     }
 
     onHome() {
-        ws.close();
         this.setState({home: true});
-    }
-
-    handleMessage(msg: MessageEvent) {
-        const data = JSON.parse(msg.data);
-        this.setState({linkData: [...this.state.linkData, createRow(data.link, data.status)]});
     }
 
     render() {

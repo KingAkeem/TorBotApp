@@ -1,18 +1,23 @@
+import { object } from "prop-types";
+
 /**
  * This function provides a simple interface to perform a HTTP request.
  */
-export default function (method: string, url: string, data?: string): Promise<XMLHttpRequest> {
+export default function (method: string, url: string, data?: string): Promise<AjaxRequest> {
     return new Promise(function (resolve, reject) {
             const xhr = new XMLHttpRequest();
             xhr.open(method, url);
             xhr.onload = function() {
                 if (this.status >= 200 && this.status < 300) {
-                    resolve(xhr);
-                } else {
-                    reject(xhr);               
+                    const ajax = Object.assign(xhr, {origin: url});
+                    resolve(ajax);
+                } else { 
+                    const ajax = Object.assign(xhr, {origin: url});
+                    reject(ajax);               
                 }
             };
             xhr.onerror = () => reject(xhr)
-            xhr.send(JSON.stringify(data));
+            if (data) xhr.send(JSON.stringify(data));
+            else xhr.send();
         });
 }
