@@ -50,15 +50,14 @@ export default class Links extends React.Component<LinksProp, LinksState> {
         super(props);
         this.state = {linkData: new Array(), home: false};
         this.onHome = this.onHome.bind(this);
-        this.onInit(props);
     }
 
     onHome() {
         this.setState({home: true});
     }
 
-    onInit(props: LinksProp) {
-        makeRequest('GET', props.url)
+    componentDidMount() {
+        makeRequest('GET', this.props.url)
             .then(response => {
                 const body = response.responseText;
                 const links = parseLinks(body);     

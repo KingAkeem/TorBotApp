@@ -48,15 +48,14 @@ export default class Email extends React.Component<EmailProps, EmailState> {
         super(props);
         this.state = {emails: [], home: false};
         this.onHome = this.onHome.bind(this);
-        this.onInit(props);
     }
 
     onHome() {
         this.setState({home: true});
     }
 
-    onInit(props: EmailProps) {
-        makeTorRequest(props.url)
+    componentDidMount() {
+        makeTorRequest(this.props.url)
             .then(response => this.setState({emails: parseEmails(response.body)}))
             .catch(error => console.error(error));
     }
