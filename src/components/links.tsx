@@ -52,9 +52,9 @@ const getLinks = (url: string, scope: any) => {
             links.forEach(link => {
                 makeRequest('GET', link)
                     .then(resp => {
-                        scope.setState({linkData: [...scope.state.linkData, {link: resp.origin, status: resp.statusText}]});
+                        scope.setState({linkData: [...scope.state.linkData, {link: resp.origin, status: `${resp.status}  ${resp.statusText}`}]});
                     })
-                    .catch(e => console.warn(e));
+                    .catch(e => console.error(e));
             });
         })
         .catch(e => console.error(e));
