@@ -1,5 +1,3 @@
-import { object } from "prop-types";
-
 /**
  * This function provides a simple interface to perform a HTTP request.
  */
