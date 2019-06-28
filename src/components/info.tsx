@@ -7,6 +7,7 @@ import TableCell from '@material-ui/core/TableCell';
 import Paper from '@material-ui/core/Paper';
 import Home from './home';
 import Button from '@material-ui/core/Button';
+import makeRequest from '../lib/makeRequest';
 
 let id = 0;
 const createRow = (header: string, value: string) => {
@@ -22,8 +23,23 @@ const convertInfoToRows = (info: Map<string, string>) => {
     return headerRows;
 };
 
+const getHeaderMap = (request: XMLHttpRequest): Map<string, string> => {
+    const headers = request.getAllResponseHeaders();
+    const arr = headers.trim().split(/[\r\n]+/);
+    const headerMap = new Map();
+
+    arr.forEach(line => {
+      var parts = line.split(': ');
+      var header = parts.shift();
+      var value = parts.join(': ');
+      headerMap.set(header, value);
+    });
+
+    return headerMap;
+};
+
 type InfoProps = {
-    info: Map<string, string> 
+    url: string
 }
 
 type InfoState = {
@@ -34,12 +50,23 @@ type InfoState = {
 export default class Info extends React.Component<InfoProps, InfoState> {
     constructor(props: InfoProps) {
         super(props);
-        this.state = {rows: convertInfoToRows(props.info), home: false};
+        this.state = {rows: [], home: false};
         this.onHome = this.onHome.bind(this);
     } 
 
     onHome() {
         this.setState({home: true});
+    }
+
+    componentDidMount() {
+        makeRequest('GET', this.props.url)
+            .then(response => {
+                const headers = getHeaderMap(response);
+                this.setState({rows: convertInfoToRows(headers)});
+            })
+            .catch(error => {
+                console.error(error);
+            })
     }
 
     render() {
