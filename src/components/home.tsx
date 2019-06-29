@@ -7,7 +7,6 @@ import MenuItem from '@material-ui/core/MenuItem';
 import Email from './email';
 import Info from './info';
 import Links from './links';
-import makeRequest from '../lib/makeRequest';
 import isValidUrl from '../lib/isValidUrl';
 import './home.css';
 
@@ -33,29 +32,20 @@ const LINKS = 'GET_LINKS';
 const INFO = 'GET_INFORMATION';
 const EMAILS = 'GET_EMAILS';
 
-function getInformation(url: string): Promise<object> {
-    return makeRequest('GET', 'http://127.0.0.1:8080/info?url=' + url)
-        .then((responseObj: XMLHttpRequest)  => {
-            return JSON.parse(responseObj.response);
-        })
-        .catch((err: Error) => {
-            throw err;
-        });
-}
+type HomeProps = {};
 
 type HomeState = {
     option: string,
     url: string,
-    info: object,
+    info: Map<string, string>,
     submit: boolean
 };
-
-type HomeProps = {};
 
 export default class Home extends React.Component<HomeProps, HomeState> {
     constructor(props: HomeProps) {
         super(props);
-        this.state = {option: LINKS, url: '', info: null, submit: false}; this.handleTextChange = this.handleTextChange.bind(this);
+        this.state = {option: LINKS, url: '', info: new Map(), submit: false}; 
+        this.handleTextChange = this.handleTextChange.bind(this);
         this.handleSelectChange = this.handleSelectChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
         this.keyPress = this.keyPress.bind(this);
@@ -67,22 +57,7 @@ export default class Home extends React.Component<HomeProps, HomeState> {
             alert('Invalid URL');
             return;
         }
-        switch (this.state.option) {
-            case LINKS:
-            case EMAILS:
-                this.setState({'submit': true});
-                break;
-            case INFO:
-                getInformation(this.state.url)
-                    .then(info => {
-                        this.setState({'info': info});
-                        this.setState({'submit': true});
-                    })
-                    .catch(err => {
-                        console.log(err);
-                    });
-                break;
-        }
+        this.setState({'submit': true});
     }
     
     handleTextChange(event: React.ChangeEvent<HTMLInputElement>) {
@@ -119,7 +94,7 @@ export default class Home extends React.Component<HomeProps, HomeState> {
         }
         switch (this.state.option) {
             case INFO:
-                return <Info info={new Map(Object.entries(this.state.info))}/>;
+                return <Info url={this.state.url}/>;
             case LINKS:
                 return <Links url={this.state.url}/>;
             case EMAILS:

@@ -7,20 +7,39 @@ import TableCell from '@material-ui/core/TableCell';
 import Paper from '@material-ui/core/Paper';
 import Button from '@material-ui/core/Button';
 import Home from './home';
+import makeTorRequest from '../lib/makeTorRequest';
 
-let ws: WebSocket;
 let id = 0;
-function createRow(email: string) {
+const createRow = (email: string) => {
     id += 1;
     return {id, email};
 }
+
+const parseEmails = (html: string) => {
+    const parser = new DOMParser();
+    const dom = parser.parseFromString(html, 'text/html');
+    const tags = dom.getElementsByTagName('a');
+    const emails = new Array();
+    for (let i = 0; i < tags.length; i++) {
+        const item = tags.item(i);
+        const itemAttrs = item.attributes;
+        for (let j = 0; j < itemAttrs.length; j++) {
+            const attr = itemAttrs.item(j);
+            const value = attr.nodeValue;
+            if (value.includes('mailto:')) {
+                emails.push(createRow(value.split(':')[1]));
+            }
+        }
+    }
+    return emails;
+};
 
 type EmailProps = {
     url: string
 }
 
 type EmailState = {
-    emails: Array<{email: string, id: number}>,
+    emails: Array<{email: string, id: string}>,
     home: boolean
 }
 
@@ -28,19 +47,17 @@ export default class Email extends React.Component<EmailProps, EmailState> {
     constructor(props: EmailProps) {
         super(props);
         this.state = {emails: [], home: false};
-        ws = new WebSocket('ws://127.0.0.1:8080/emails?url=' + encodeURIComponent(props.url));
-        ws.onmessage = this.handleMessage.bind(this); 
         this.onHome = this.onHome.bind(this);
     }
 
     onHome() {
-        ws.close();
         this.setState({home: true});
     }
 
-    handleMessage(msg: MessageEvent) {
-        const data = JSON.parse(msg.data);
-        this.setState({emails: [...this.state.emails, createRow(data.email)]});
+    componentDidMount() {
+        makeTorRequest(this.props.url)
+            .then(response => this.setState({emails: parseEmails(response.body)}))
+            .catch(error => console.error(error));
     }
 
     render() {
