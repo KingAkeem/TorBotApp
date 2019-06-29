@@ -3,19 +3,17 @@
  */
 export default function (method: string, url: string, data?: string): Promise<OriginRequest> {
     return new Promise(function (resolve, reject) {
-            const xhr = new XMLHttpRequest();
-            xhr.open(method, url);
-            xhr.onload = function() {
+            const req = newOriginRequest(url);
+            req.open(method, url);
+            req.onload = function() {
                 if (this.status >= 200 && this.status < 300) {
-                    const ajax = Object.assign(xhr, {origin: url});
-                    resolve(ajax);
+                    resolve(req);
                 } else { 
-                    const ajax = Object.assign(xhr, {origin: url});
-                    reject(ajax);               
+                    reject(req);               
                 }
             };
-            xhr.onerror = () => reject(xhr)
-            if (data) xhr.send(JSON.stringify(data));
-            else xhr.send();
+            req.onerror = () => reject(req)
+            if (data) req.send(JSON.stringify(data));
+            else req.send();
         });
 }
