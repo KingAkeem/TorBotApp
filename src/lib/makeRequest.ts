@@ -1,7 +1,7 @@
 /**
  * This function provides a simple interface to perform a HTTP request.
  */
-export default function (method: string, url: string, data?: string): Promise<OriginRequest> {
+const makeRequest = (method: string, url: string, data?: string): Promise<OriginRequest> => {
     return new Promise(function (resolve, reject) {
             const req = newOriginRequest(url);
             req.open(method, url);
@@ -17,3 +17,5 @@ export default function (method: string, url: string, data?: string): Promise<Or
             else req.send();
         });
 }
+
+export default makeRequest;
