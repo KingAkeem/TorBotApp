@@ -67,11 +67,8 @@ export default class Links extends React.Component<LinksProp, LinksState> {
                     }).catch(e => console.error(e));
             });
         };
-        simpleRequest({
-            method: 'GET',
-            url: this.props.url,
-            tor: this.props.tor
-        }).then(getLinks).catch(e => console.error(e));
+        const req = { method: 'GET', url: this.props.url, tor: this.props.tor };
+        simpleRequest(req).then(getLinks).catch(e => console.error(e));
     }
 
     render() {
