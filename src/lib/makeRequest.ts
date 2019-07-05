@@ -1,9 +1,5 @@
 import { SimpleResponse } from "./simpleRequest";
 
-/**
- * This function provides a simple interface to perform a HTTP request.
- */
-
  const getHeaderMap = (headers: string): Map<string, string> => {
     const arr = headers.trim().split(/[\r\n]+/);
     const headerMap = new Map<string, string>();
@@ -17,19 +13,16 @@ import { SimpleResponse } from "./simpleRequest";
 
     return headerMap;
 };
-
-const makeRequest = (method: string, url: string, data?: string): Promise<SimpleResponse> => {
+const makeRequest = (method: string, origin: string, data?: string): Promise<SimpleResponse> => {
     return new Promise(function (resolve, reject) {
             const req = new XMLHttpRequest();
-            req.open(method, url);
+            req.open(method, origin);
             req.onload = function() {
                 if (this.status >= 200 && this.status < 300) {
-                    resolve({
-                        origin: url,
-                        headers: getHeaderMap(req.getAllResponseHeaders()),
-                        statusCode: req.status,
-                        body: req.responseText
-                    });
+                    const headers = getHeaderMap(req.getAllResponseHeaders()); 
+                    const statusCode = req.status;
+                    const body = req.responseText;
+                    resolve({ origin, headers, statusCode, body });
                 } else { 
                     reject(req);               
                 }

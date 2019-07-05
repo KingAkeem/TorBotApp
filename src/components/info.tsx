@@ -45,12 +45,10 @@ export default class Info extends React.Component<InfoProps, InfoState> {
     }
 
     componentDidMount() {
-        simpleRequest({
-            method: 'GET',
-            url: this.props.url,
-            tor: this.props.tor
-        }).then(response => this.setState({rows: convertHeadersToRows(response.headers)}))
-        .catch(error => console.error(error))
+        const req = { method: 'GET', url: this.props.url, tor: this.props.tor };
+        simpleRequest(req).then(response => 
+            this.setState({ rows: convertHeadersToRows(response.headers) })
+        ).catch(error => console.error(error))
     }
 
     render() {

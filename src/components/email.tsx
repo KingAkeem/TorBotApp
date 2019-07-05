@@ -56,12 +56,10 @@ export default class Email extends React.Component<EmailProps, EmailState> {
     }
 
     componentDidMount() {
-        simpleRequest({
-            method: 'GET',
-            url: this.props.url,
-            tor: this.props.tor
-        }).then(response => this.setState({emails: parseEmails(response.body)}))
-        .catch(error => console.error(error));
+        const req = { method: 'GET', url: this.props.url, tor: this.props.tor };
+        simpleRequest(req).then(response => 
+            this.setState({emails: parseEmails(response.body)})
+        ).catch(error => console.error(error));
     }
 
     render() {
