@@ -7,9 +7,8 @@ import TableCell from '@material-ui/core/TableCell';
 import Paper from '@material-ui/core/Paper';
 import Button from '@material-ui/core/Button';
 import Home from './home';
-import { LinkProps } from '@material-ui/core/Link';
-import makeRequest from '../lib/makeRequest';
 import isValidUrl from '../lib/isValidUrl';
+import simpleRequest, { SimpleResponse } from '../lib/simpleRequest';
 
 
 let id = 0;
@@ -19,6 +18,7 @@ const createRow = (link: string, status: string) => {
 }
 
 type LinksProp  = {
+    tor: boolean
     url: string
 }
 
@@ -57,21 +57,21 @@ export default class Links extends React.Component<LinksProp, LinksState> {
     }
 
     componentDidMount() {
-        makeRequest('GET', this.props.url)
-            .then(response => {
-                const body = response.responseText;
-                const links = parseLinks(body);     
-                links.forEach(link => {
-                    if (!isValidUrl(link)) return;
-                    makeRequest('GET', link)
-                        .then(resp => {
-                            const data = createRow(resp.origin, `${resp.status}  ${resp.statusText}`);
-                            this.setState({linkData: [...this.state.linkData, data]});
-                        })
-                        .catch(e => console.error(e));
-                });
-            })
-            .catch(e => console.error(e));
+        const getLinks = (response: SimpleResponse) => {
+            parseLinks(response.body).forEach(link => {
+                if (!isValidUrl(link)) return;
+                simpleRequest({method: 'GET', url: link, tor: this.props.tor})
+                    .then(resp => {
+                        const data = createRow(resp.origin, `${resp.statusCode}`);
+                        this.setState({linkData: [...this.state.linkData, data]});
+                    }).catch(e => console.error(e));
+            });
+        };
+        simpleRequest({
+            method: 'GET',
+            url: this.props.url,
+            tor: this.props.tor
+        }).then(getLinks).catch(e => console.error(e));
     }
 
     render() {

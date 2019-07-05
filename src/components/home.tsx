@@ -100,11 +100,11 @@ export default class Home extends React.Component<HomeProps, HomeState> {
                     <FormControlLabel 
                         value="torLabel"
                         control={<Switch
-                                color="primary"
-                                value="useTor"
-                                checked={this.state.useTor}
-                                onChange={this.toggleSwitch}
-                            />}
+                                    color="primary"
+                                    value="useTor"
+                                    checked={this.state.useTor}
+                                    onChange={this.toggleSwitch}
+                                />}
                         label={<Typography variant='button' color='primary'>Use Tor</Typography>}
                         labelPlacement="start"
                     />
@@ -113,11 +113,11 @@ export default class Home extends React.Component<HomeProps, HomeState> {
         }
         switch (this.state.option) {
             case INFO:
-                return <Info url={this.state.url}/>;
+                return <Info url={this.state.url} tor={this.state.useTor}/>;
             case LINKS:
-                return <Links url={this.state.url}/>;
+                return <Links url={this.state.url} tor={this.state.useTor}/>;
             case EMAILS:
-                return <Email url={this.state.url}/>;
+                return <Email url={this.state.url} tor={this.state.useTor}/>;
             default:
                 console.log('Invalid option.');
         }
