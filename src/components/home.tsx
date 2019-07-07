@@ -9,6 +9,7 @@ import Info from './info';
 import Links from './links';
 import isValidUrl from '../lib/isValidUrl';
 import './home.css';
+import { Switch, FormControlLabel, Typography } from '@material-ui/core';
 
 const StyledTextField = withStyles({
     root: {
@@ -39,15 +40,17 @@ type HomeState = {
     url: string,
     info: Map<string, string>,
     submit: boolean
+    useTor: boolean
 };
 
 export default class Home extends React.Component<HomeProps, HomeState> {
     constructor(props: HomeProps) {
         super(props);
-        this.state = {option: LINKS, url: '', info: new Map(), submit: false}; 
+        this.state = {option: LINKS, url: '', info: new Map(), submit: false, useTor: true}; 
         this.handleTextChange = this.handleTextChange.bind(this);
         this.handleSelectChange = this.handleSelectChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
+        this.toggleSwitch = this.toggleSwitch.bind(this);
         this.keyPress = this.keyPress.bind(this);
     }
 
@@ -66,6 +69,10 @@ export default class Home extends React.Component<HomeProps, HomeState> {
 
     handleSelectChange(event: React.ChangeEvent<HTMLSelectElement>, child: ReactNode) {
         this.setState({option: event.target.value});
+    }
+
+    toggleSwitch(event: object, switched: boolean) {
+        this.setState({useTor: switched});
     }
 
     keyPress(event: KeyboardEvent) {
@@ -89,16 +96,28 @@ export default class Home extends React.Component<HomeProps, HomeState> {
                     <Button onClick={this.handleSubmit} variant="contained" color="primary">
                         Submit
                     </Button>
+                    <br/>
+                    <FormControlLabel 
+                        value="torLabel"
+                        control={<Switch
+                                    color="primary"
+                                    value="useTor"
+                                    checked={this.state.useTor}
+                                    onChange={this.toggleSwitch}
+                                />}
+                        label={<Typography variant='button' color='primary'>Use Tor</Typography>}
+                        labelPlacement="start"
+                    />
                 </form>
             );
         }
         switch (this.state.option) {
             case INFO:
-                return <Info url={this.state.url}/>;
+                return <Info url={this.state.url} tor={this.state.useTor}/>;
             case LINKS:
-                return <Links url={this.state.url}/>;
+                return <Links url={this.state.url} tor={this.state.useTor}/>;
             case EMAILS:
-                return <Email url={this.state.url}/>;
+                return <Email url={this.state.url} tor={this.state.useTor}/>;
             default:
                 console.log('Invalid option.');
         }

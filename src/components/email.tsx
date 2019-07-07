@@ -7,7 +7,7 @@ import TableCell from '@material-ui/core/TableCell';
 import Paper from '@material-ui/core/Paper';
 import Button from '@material-ui/core/Button';
 import Home from './home';
-import makeTorRequest from '../lib/makeTorRequest';
+import simpleRequest from '../lib/simpleRequest';
 
 let id = 0;
 const createRow = (email: string) => {
@@ -36,6 +36,7 @@ const parseEmails = (html: string) => {
 
 type EmailProps = {
     url: string
+    tor: boolean
 }
 
 type EmailState = {
@@ -55,9 +56,10 @@ export default class Email extends React.Component<EmailProps, EmailState> {
     }
 
     componentDidMount() {
-        makeTorRequest(this.props.url)
-            .then(response => this.setState({emails: parseEmails(response.body)}))
-            .catch(error => console.error(error));
+        const req = { method: 'GET', url: this.props.url, tor: this.props.tor };
+        simpleRequest(req).then(response => 
+            this.setState({emails: parseEmails(response.body)})
+        ).catch(error => console.error(error));
     }
 
     render() {
