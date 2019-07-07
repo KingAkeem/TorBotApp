@@ -17,19 +17,30 @@ export interface SimpleResponse {
     origin: string 
 }
 
-const simpleRequest = (request: SimpleOptions): Promise<SimpleResponse> => {
-    if (!request.url) return Promise.resolve({statusCode: 404, body: null, headers: null, origin: request.url});
+const notSupported = (request :SimpleOptions): boolean => {
     if (request.tor) {
-        if (request.data) console.error('Not supported yet.');
-        if (request.method !== 'GET') {
-            console.error('Not supported yet.');
-            return Promise.resolve({statusCode: -1, headers: null, body: 'Not supported yet', origin: request.url});
+        if (request.data ||request.method !== 'GET') {
+            console.error('Not supported');
+            return true;
         }
-        return makeTorRequest(request.method, request.url)
-    } else {
-        if (request.data) return makeRequest(request.method, request.url, request.data)
-        return makeRequest(request.method, request.url);
     }
+    return false;
+}
+
+const invalidUrlResp = (request: SimpleOptions): Promise<SimpleResponse> => {
+    return Promise.resolve({statusCode: 404, body: null, headers: null, origin: request.url});
+};
+
+const notSupportedResp = (request: SimpleOptions): Promise<SimpleResponse> => {
+    return Promise.resolve({statusCode: -1, headers: null, body: 'Unsupported', origin: request.url});
+};
+
+const simpleRequest = (request: SimpleOptions): Promise<SimpleResponse> => {
+    if (!request.url) return invalidUrlResp(request);
+    if (notSupported(request)) return notSupportedResp(request);
+    if (request.tor) return makeTorRequest(request.method, request.url);
+    if (request.data) return makeRequest(request.method, request.url, request.data);
+    return makeRequest(request.method, request.url);
 };
 
 export default simpleRequest;
