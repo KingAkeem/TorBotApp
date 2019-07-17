@@ -33,7 +33,8 @@ export default class LinkTree extends React.Component<LinkTreeProps, LinkTreeSta
   }
   
   componentDidMount() {
-    simpleRequest({method: 'GET', url: this.state.root.name}).then(response => {
+    const req = {method: 'GET', url: this.props.url, tor: this.props.tor};
+    simpleRequest(req).then(response => {
       const links = parseLinks(response.body);
       if (!links) return;
       const data: LinkNode[] = [];
@@ -42,7 +43,7 @@ export default class LinkTree extends React.Component<LinkTreeProps, LinkTreeSta
         data.push(n);
       });
       const newRoot = {
-        name: this.state.root.name, 
+        name: this.props.url, 
         children: [...this.state.root.children, ...data]
       };
       this.setState({root: newRoot});
@@ -52,9 +53,32 @@ export default class LinkTree extends React.Component<LinkTreeProps, LinkTreeSta
 
   render() {
     if (this.state.home) return <Home/>;
+    const styles = {
+      links: {
+        stroke: 'white'
+      }, 
+      nodes: {
+        node: {
+          circle: {
+            stroke: 'white'
+          },
+          name: {
+            stroke: 'white'
+          }
+        },
+        leafNode: {
+          circle: {
+            stroke:'white'
+          },
+          name: {
+            stroke: 'white'
+          }
+        }
+      } 
+    };
     return (
       <div id="treeWrapper" style={{width: '100vw', height: '100vw'}}>
-        <Tree data={this.state.root}/>
+        <Tree data={this.state.root} styles={styles}/>
       </div>
     );
   }
