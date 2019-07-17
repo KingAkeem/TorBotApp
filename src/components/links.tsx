@@ -8,6 +8,7 @@ import Paper from '@material-ui/core/Paper';
 import Button from '@material-ui/core/Button';
 import Home from './home';
 import isValidUrl from '../lib/isValidUrl';
+import parseLinks from '../lib/parseLinks';
 import simpleRequest, { SimpleResponse } from '../lib/simpleRequest';
 
 
@@ -25,24 +26,6 @@ type LinksProp  = {
 type LinksState = {
     linkData: Array<{id: number, link: string, status: string}>,
     home: boolean
-}
-
-const parseLinks = (html: string) => {
-    const parser = new DOMParser();
-    const dom = parser.parseFromString(html, 'text/html');
-    const tags = dom.getElementsByTagName('a');
-    const links = new Array();
-    for (let i = 0; i < tags.length; i++) {
-        const item = tags.item(i);
-        const attrs = item.attributes;
-        for (let j = 0; j < attrs.length; j++) {
-            if (attrs[j].nodeName === 'href') {
-                const link = attrs[j].nodeValue;
-                links.push(link);
-            }
-        }
-    }
-    return links;
 }
 
 export default class Links extends React.Component<LinksProp, LinksState> {
