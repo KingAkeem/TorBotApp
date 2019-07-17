@@ -1,6 +1,5 @@
 import makeTorRequest from "./makeTorRequest";
 import makeRequest from "./makeRequest";
-import { IncomingHttpHeaders } from "http";
 
 interface SimpleOptions {
     tor?: boolean
@@ -19,7 +18,7 @@ export interface SimpleResponse {
 
 const notSupported = (request :SimpleOptions): boolean => {
     if (request.tor) {
-        if (request.data ||request.method !== 'GET') {
+        if (request.data || request.method !== 'GET') {
             console.error('Not supported');
             return true;
         }

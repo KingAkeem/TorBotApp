@@ -7,6 +7,7 @@ import MenuItem from '@material-ui/core/MenuItem';
 import Email from './email';
 import Info from './info';
 import Links from './links';
+import LinkTree from './visualizer';
 import isValidUrl from '../lib/isValidUrl';
 import './home.css';
 import { Switch, FormControlLabel, Typography } from '@material-ui/core';
@@ -32,6 +33,7 @@ const StyledSelect = withStyles({
 const LINKS = 'GET_LINKS';
 const INFO = 'GET_INFORMATION';
 const EMAILS = 'GET_EMAILS';
+const VISUALIZE = 'VIEW_TREE';
 
 type HomeProps = {};
 
@@ -91,6 +93,7 @@ export default class Home extends React.Component<HomeProps, HomeState> {
                         <MenuItem value={LINKS}>Get Links</MenuItem>
                         <MenuItem value={INFO}>Get Information</MenuItem>
                         <MenuItem value={EMAILS}>Get Emails</MenuItem>
+                        <MenuItem value={VISUALIZE}>View Tree</MenuItem>
                     </StyledSelect>
                     <br/>
                     <Button onClick={this.handleSubmit} variant="contained" color="primary">
@@ -118,6 +121,8 @@ export default class Home extends React.Component<HomeProps, HomeState> {
                 return <Links url={this.state.url} tor={this.state.useTor}/>;
             case EMAILS:
                 return <Email url={this.state.url} tor={this.state.useTor}/>;
+          case VISUALIZE:
+              return <LinkTree url={this.state.url} tor={this.state.useTor}/>;
             default:
                 console.log('Invalid option.');
         }
