@@ -9,7 +9,7 @@ type NodeChildren = Array<LinkNode>;
 
 type LinkNode = {
   name: string,
-  children: NodeChildren 
+  children: NodeChildren
 };
 
 type LinkTreeProps = {
@@ -31,7 +31,7 @@ export default class LinkTree extends React.Component<LinkTreeProps, LinkTreeSta
   onHome() {
     this.setState({ home: true });
   }
-  
+
   componentDidMount() {
     const req = {method: 'GET', url: this.props.url, tor: this.props.tor};
     simpleRequest(req).then(response => {
@@ -43,7 +43,7 @@ export default class LinkTree extends React.Component<LinkTreeProps, LinkTreeSta
         data.push(n);
       });
       const newRoot = {
-        name: this.props.url, 
+        name: this.props.url,
         children: [...this.state.root.children, ...data]
       };
       this.setState({root: newRoot});
@@ -56,7 +56,7 @@ export default class LinkTree extends React.Component<LinkTreeProps, LinkTreeSta
     const styles = {
       links: {
         stroke: 'white'
-      }, 
+      },
       nodes: {
         node: {
           circle: {
@@ -74,7 +74,7 @@ export default class LinkTree extends React.Component<LinkTreeProps, LinkTreeSta
             stroke: 'white'
           }
         }
-      } 
+      }
     };
     return (
       <div id="treeWrapper" style={{width: '100vw', height: '100vw'}}>
