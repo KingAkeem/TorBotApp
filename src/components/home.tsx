@@ -1,16 +1,20 @@
 import React, { KeyboardEvent, ReactNode, MouseEvent } from 'react';
+
 import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
 import { withStyles } from '@material-ui/core/styles';
 import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
+import { Switch, FormControlLabel, Typography } from '@material-ui/core';
+
 import Email from './email';
 import Info from './info';
 import Links from './links';
 import LinkTree from './visualizer';
 import isValidUrl from '../lib/isValidUrl';
+import isValidDepth from '../lib/isValidDepth';
+
 import './home.css';
-import { Switch, FormControlLabel, Typography } from '@material-ui/core';
 
 const StyledTextField = withStyles({
   root: {
@@ -58,17 +62,13 @@ export default class Home extends React.Component<HomeProps, HomeState> {
     this.keyPress = this.keyPress.bind(this);
   }
 
-  validDepth(depth: number): boolean {
-    return depth < 10;
-  }
-
   handleSubmit(event:  MouseEvent) {
     event.preventDefault();
     if (!isValidUrl(this.state.url)) {
       alert('Invalid URL');
       return;
     }
-    if (!this.validDepth(this.state.depth)) {
+    if (!isValidDepth(this.state.depth)) {
       alert('Invalid Depth');
       return;
     }
@@ -80,13 +80,8 @@ export default class Home extends React.Component<HomeProps, HomeState> {
   }
 
   handleDepthChange(event: React.ChangeEvent<HTMLInputElement>) {
-    let depth;
-    try {
-      depth = Number(event.target.value);
-    } catch (err) {
-      return;
-    }
-    this.setState({ depth });
+    const depth = Number(event.target.value);
+    if (isValidDepth(depth)) this.setState({ depth });
   }
 
   handleSelectChange(event: React.ChangeEvent<HTMLSelectElement>, child: ReactNode) {
@@ -143,7 +138,7 @@ export default class Home extends React.Component<HomeProps, HomeState> {
       case EMAILS:
         return <Email url={this.state.url} tor={this.state.useTor}/>;
       case VISUALIZE:
-        return <LinkTree url={this.state.url} tor={this.state.useTor}/>;
+        return <LinkTree url={this.state.url} tor={this.state.useTor} depth={this.state.depth}/>;
       default:
         console.log('Invalid option.');
     }

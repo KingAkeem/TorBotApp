@@ -1,24 +1,18 @@
 import React from 'react';
-import simpleRequest from '../lib/simpleRequest';
-import parseLinks from '../lib/parseLinks';
 import Tree from 'react-d3-tree';
+
 import Home from './home';
-
-
-type NodeChildren = Array<LinkNode>;
-
-type LinkNode = {
-  name: string,
-  children: NodeChildren
-};
+import bulidLinkTree, { LinkNode } from '../lib/bulidLinkTree';
+import { Button } from '@material-ui/core';
 
 type LinkTreeProps = {
-  url: string,
+  url: string
   tor: boolean
+  depth: number
 };
 
 type LinkTreeState = {
-  root: LinkNode,
+  root: LinkNode
   home: boolean
 };
 
@@ -32,27 +26,16 @@ export default class LinkTree extends React.Component<LinkTreeProps, LinkTreeSta
     this.setState({ home: true });
   }
 
-  componentDidMount() {
-    const req = {method: 'GET', url: this.props.url, tor: this.props.tor};
-    simpleRequest(req).then(response => {
-      const links = parseLinks(response.body);
-      if (!links) return;
-      const data: LinkNode[] = [];
-      links.forEach(link => {
-        const n: LinkNode = { name: link, children: [] };
-        data.push(n);
-      });
-      const newRoot = {
-        name: this.props.url,
-        children: [...this.state.root.children, ...data]
-      };
-      this.setState({root: newRoot});
-    });
+  async componentDidMount() {
+    this.setState({root: await bulidLinkTree(this.props.url, {
+      tor: this.props.tor,
+      depth: this.props.depth
+    })});
   }
-
 
   render() {
     if (this.state.home) return <Home/>;
+
     const styles = {
       links: {
         stroke: 'white'
@@ -76,6 +59,7 @@ export default class LinkTree extends React.Component<LinkTreeProps, LinkTreeSta
         }
       }
     };
+
     return (
       <div id="treeWrapper" style={{width: '100vw', height: '100vw'}}>
         <Tree data={this.state.root} styles={styles}/>
