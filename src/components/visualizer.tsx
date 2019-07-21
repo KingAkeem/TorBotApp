@@ -3,7 +3,6 @@ import Tree from 'react-d3-tree';
 
 import Home from './home';
 import bulidLinkTree, { LinkNode } from '../lib/bulidLinkTree';
-import { Button } from '@material-ui/core';
 
 type LinkTreeProps = {
   url: string
@@ -27,10 +26,8 @@ export default class LinkTree extends React.Component<LinkTreeProps, LinkTreeSta
   }
 
   async componentDidMount() {
-    this.setState({root: await bulidLinkTree(this.props.url, {
-      tor: this.props.tor,
-      depth: this.props.depth
-    })});
+    const params = {tor: this.props.tor, depth: this.props.depth};
+    this.setState({root: await bulidLinkTree(this.props.url, params)});
   }
 
   render() {
