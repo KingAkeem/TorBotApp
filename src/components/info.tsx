@@ -44,11 +44,17 @@ export default class Info extends React.Component<InfoProps, InfoState> {
         this.setState({home: true});
     }
 
-    componentDidMount() {
-        const req = { method: 'GET', url: this.props.url, tor: this.props.tor };
-        simpleRequest(req).then(response => 
-            this.setState({ rows: convertHeadersToRows(response.headers) })
-        ).catch(error => console.error(error))
+    async componentDidMount() {
+        try {
+            const response = await simpleRequest({
+                method: 'GET', url: 
+                this.props.url, 
+                tor: this.props.tor
+            });
+            this.setState({rows: convertHeadersToRows(response.headers)});
+        } catch(error) {
+            console.error(error);
+        }
     }
 
     render() {

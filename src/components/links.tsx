@@ -39,19 +39,27 @@ export default class Links extends React.Component<LinksProp, LinksState> {
         this.setState({home: true});
     }
 
-    componentDidMount() {
-        const getLinks = (response: SimpleResponse) => {
-            parseLinks(response.body).forEach(link => {
-                if (!isValidUrl(link)) return;
-                simpleRequest({method: 'GET', url: link, tor: this.props.tor})
-                    .then(resp => {
-                        const data = createRow(resp.origin, `${resp.statusCode}`);
-                        this.setState({linkData: [...this.state.linkData, data]});
-                    }).catch(e => console.error(e));
+    async componentDidMount() {
+        try {
+            const response = await simpleRequest({
+                method: 'GET', 
+                url: this.props.url, 
+                tor: this.props.tor
             });
-        };
-        const req = { method: 'GET', url: this.props.url, tor: this.props.tor };
-        simpleRequest(req).then(getLinks).catch(e => console.error(e));
+            const links = parseLinks(response.body);
+            for (const link of links) {
+                if (!isValidUrl(link)) continue;
+                const resp = await simpleRequest({
+                    method: 'GET', 
+                    url: link, 
+                    tor: this.props.tor
+                });
+                const data = createRow(resp.origin, `${resp.statusCode}`);
+                this.setState({linkData: [...this.state.linkData, data]});
+            }
+        } catch(error) {
+            console.error(error);
+        }
     }
 
     render() {
