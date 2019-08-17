@@ -1,4 +1,4 @@
-import { SimpleResponse } from "./simpleRequest";
+import { Response } from "./Request";
 
  const getHeaderMap = (headers: string): Map<string, string> => {
   const arr = headers.trim().split(/[\r\n]+/);
@@ -14,7 +14,7 @@ import { SimpleResponse } from "./simpleRequest";
   return headerMap;
 };
 
-export default (method: string, origin: string, data?: string): Promise<SimpleResponse> => {
+export default (method: string, origin: string, data?: string): Promise<Response> => {
   return new Promise(function (resolve, reject) {
     const req = new XMLHttpRequest();
     req.open(method, origin);

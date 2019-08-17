@@ -9,7 +9,7 @@ import Button from '@material-ui/core/Button';
 import Home from './home';
 import isValidUrl from '../lib/isValidUrl';
 import parseLinks from '../lib/parseLinks';
-import simpleRequest, { SimpleResponse } from '../lib/simpleRequest';
+import Request from '../lib/Request';
 
 
 let id = 0;
@@ -40,17 +40,16 @@ export default class Links extends React.Component<LinksProp, LinksState> {
     }
 
     async componentDidMount() {
+        const req = new Request();
         try {
-            const response = await simpleRequest({
-                method: 'GET', 
+            const response = await req.get({
                 url: this.props.url, 
                 tor: this.props.tor
             });
             const links = parseLinks(response.body);
             for (const link of links) {
                 if (!isValidUrl(link)) continue;
-                const resp = await simpleRequest({
-                    method: 'GET', 
+                const resp = await req.get({
                     url: link, 
                     tor: this.props.tor
                 });

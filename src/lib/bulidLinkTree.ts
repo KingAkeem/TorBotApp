@@ -1,7 +1,6 @@
 import isValidUrl from './isValidUrl';
-import simpleRequest from './simpleRequest';
+import Request from './Request';
 import parseLinks from './parseLinks';
-import { exec } from 'child_process';
 
 export type LinkNode = {
   name: string,
@@ -11,8 +10,9 @@ export type LinkNode = {
 const getNodeChildren = async (link: string, tor: boolean, depth: number): Promise<LinkNode[]> => {
   if (!isValidUrl(link)) return [];
   let response;
+  let req = new Request();
   try {
-    response = await simpleRequest({method: 'GET', url: link, tor: tor});
+    response = await req.get({url: link, tor: tor});
   } catch(err) {
     console.error(err);
     return;

@@ -7,7 +7,7 @@ import TableCell from '@material-ui/core/TableCell';
 import Paper from '@material-ui/core/Paper';
 import Home from './home';
 import Button from '@material-ui/core/Button';
-import simpleRequest from '../lib/simpleRequest';
+import Request from '../lib/Request';
 
 let id = 0;
 const createRow = (header: string, value: string) => {
@@ -45,10 +45,10 @@ export default class Info extends React.Component<InfoProps, InfoState> {
     }
 
     async componentDidMount() {
+        const req = new Request();
         try {
-            const response = await simpleRequest({
-                method: 'GET', url: 
-                this.props.url, 
+            const response = await req.get({
+                url: this.props.url, 
                 tor: this.props.tor
             });
             this.setState({rows: convertHeadersToRows(response.headers)});

@@ -7,7 +7,7 @@ import TableCell from '@material-ui/core/TableCell';
 import Paper from '@material-ui/core/Paper';
 import Button from '@material-ui/core/Button';
 import Home from './home';
-import simpleRequest from '../lib/simpleRequest';
+import Request from '../lib/Request';
 
 let id = 0;
 const createRow = (email: string) => {
@@ -56,9 +56,9 @@ export default class Email extends React.Component<EmailProps, EmailState> {
     }
 
     async componentDidMount() {
+        const req = new Request();
         try {
-            const response = await simpleRequest({
-                method: 'GET', 
+            const response = await req.get({
                 url: this.props.url, 
                 tor: this.props.tor 
             });
