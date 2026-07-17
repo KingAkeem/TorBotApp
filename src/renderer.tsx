@@ -1,13 +1,15 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
-import { library, dom } from '@fortawesome/fontawesome-svg-core';
-import { faSpinner } from '@fortawesome/free-solid-svg-icons/faSpinner';
-import './global.css';
+import { createRoot } from 'react-dom/client';
 import App from './app';
+import './global.css';
 
-/**
- * Initially renders app and sets FontAwesome library
- */
-library.add(faSpinner);
-dom.watch();
-ReactDOM.render(<App/>, document.getElementById('root'));
+const container = document.getElementById('root');
+if (!container) {
+  throw new Error('Unable to find the application root.');
+}
+
+createRoot(container).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>,
+);
