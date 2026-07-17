@@ -16,6 +16,8 @@ All notable changes to TorBot App are documented here.
   repository, `go run`, or `GOTOR_API_URL`.
 - Context-isolated preload bridge and strict renderer content security policy.
 - Backend adapter tests, TypeScript checking, and reproducible npm builds.
+- GitHub Actions verification and cross-platform, tag-driven release
+  automation with bundled GoTor binaries and SHA-256 checksums.
 
 ### Changed
 
@@ -26,6 +28,8 @@ All notable changes to TorBot App are documented here.
 - Upgraded React, TypeScript, Webpack, and Electron.
 - Moved all network, filesystem, and process access out of the renderer.
 - Replaced Yarn metadata with an npm lockfile and documented the current setup.
+- Raised the development toolchain minimum to Node.js 22.12 for current
+  Electron packaging support.
 
 ### Removed
 

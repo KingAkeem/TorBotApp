@@ -19,7 +19,7 @@ The app presents:
 
 ## Requirements
 
-- Node.js 18 or newer
+- Node.js 22.12 or newer
 - The `gotor` repository as a sibling directory
 - Go 1.24+ to build GoTor
 - Tor listening on `127.0.0.1:9050` when Tor routing is enabled
@@ -71,6 +71,28 @@ Set `GOTOR_API_URL` to use an already-running service instead:
 GOTOR_API_URL=http://127.0.0.1:8081 npm start
 ```
 
+## Packaging
+
+Create an installer for the current operating system:
+
+```bash
+npm run package
+```
+
+This compiles the sibling GoTor repository into the application resources,
+builds the renderer, and writes the installer to `release/`. To validate the
+packaged layout without creating an installer, run:
+
+```bash
+npm run package:dir
+```
+
+Set `GOTOR_DIR` when GoTor is not in the default sibling location:
+
+```bash
+GOTOR_DIR=/path/to/gotor npm run package
+```
+
 ## Verification
 
 ```bash
@@ -86,5 +108,37 @@ cd ../gotor
 go vet ./...
 go test -race ./...
 ```
+
+## GitHub Actions
+
+The CI workflow runs on pull requests, pushes to `master`, and manual
+dispatches. It:
+
+- installs from `package-lock.json` on Node.js 22.12 and 24
+- checks TypeScript, runs tests, builds the renderer, and audits production
+  dependencies
+- uploads the renderer bundle for seven days
+- performs a Linux packaging smoke test and verifies that GoTor is bundled
+
+The release workflow runs for semantic version tags such as `v1.0.0`, or can
+be started manually for an existing tag. The tag must match the version in
+`package.json`. It builds an AppImage, an NSIS installer, and a DMG on native
+GitHub-hosted runners, then publishes them with `SHA256SUMS.txt` to a GitHub
+Release.
+
+Before tagging, update `package.json`, `package-lock.json`, and this changelog.
+Then create and push the tag:
+
+```bash
+git tag -a v1.0.0 -m "TorBot 1.0.0"
+git push origin v1.0.0
+```
+
+The workflow pins GoTor to the tested revision declared as `GOTOR_REF` in both
+workflow files. Update that value deliberately when adopting a newer GoTor
+release. Release artifacts are currently unsigned; configure platform signing
+credentials before presenting them as trusted installers. The repository must
+allow GitHub Actions read/write workflow permissions so the release job can
+create or update a release.
 
 Only crawl systems you own or are explicitly authorized to assess.
