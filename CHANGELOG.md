@@ -21,6 +21,8 @@ All notable changes to TorBot App are documented here.
 
 - Replaced the original Material UI form with a responsive investigation
   workspace.
+- Kept root-profile values readable beside long, wrapped fetch-failure details
+  in wide report layouts.
 - Upgraded React, TypeScript, Webpack, and Electron.
 - Moved all network, filesystem, and process access out of the renderer.
 - Replaced Yarn metadata with an npm lockfile and documented the current setup.

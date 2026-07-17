@@ -664,8 +664,8 @@ function App() {
                         <div className="error-list">
                           {errors.slice(0, 4).map((crawlError) => (
                             <div key={`${crawlError.url}-${crawlError.message}`}>
-                              <strong>{crawlError.url}</strong>
-                              <span>{crawlError.message}</span>
+                              <strong title={crawlError.url}>{crawlError.url}</strong>
+                              <span title={crawlError.message}>{crawlError.message}</span>
                             </div>
                           ))}
                         </div>
