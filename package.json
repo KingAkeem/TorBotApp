@@ -1,57 +1,35 @@
 {
-  "name": "torbot",
-  "version": "0.1.0",
+  "name": "torbot-app",
+  "version": "1.0.0",
+  "description": "Desktop interface for TorBot powered by the GoTor crawl API",
   "private": true,
-  "dependencies": {
-    "@material-ui/core": "^3.9.2",
-    "@material-ui/icons": "^3.0.2",
-    "electron-reload-webpack-plugin": "^2.0.4",
-    "extract-text-webpack-plugin": "^4.0.0-beta.0",
-    "react": "^16.6.0",
-    "react-d3-tree": "^1.13.0",
-    "react-dom": "^16.6.0",
-    "react-scripts": "2.0.5",
-    "tor-request": "^3.1.0"
-  },
-  "scripts": {
-    "start": "webpack --mode development --watch",
-    "build": "webpack --mode production",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "electron": "electron ."
-  },
-  "homepage": "./",
   "main": "src/main.js",
-  "browserslist": [
-    ">0.2%",
-    "not dead",
-    "not ie <= 11",
-    "not op_mini all"
-  ],
+  "scripts": {
+    "build": "webpack --mode production",
+    "dev": "webpack --mode development --watch",
+    "electron": "electron .",
+    "start": "npm run build && electron .",
+    "setup:gotor": "node scripts/build-gotor.js",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
   "devDependencies": {
-    "@babel/preset-env": "^7.1.0",
-    "@fortawesome/fontawesome-common-types": "^0.2.19",
-    "@fortawesome/fontawesome-svg-core": "^1.2.8",
-    "@fortawesome/free-brands-svg-icons": "^5.5.0",
-    "@fortawesome/free-regular-svg-icons": "^5.5.0",
-    "@fortawesome/free-solid-svg-icons": "^5.5.0",
-    "@types/react-dom": "^16.8.4",
-    "awesome-typescript-loader": "^5.2.1",
-    "babel-eslint": "^10.0.1",
-    "babel-loader": "^8.0.4",
-    "css-loader": "^1.0.1",
-    "electron": "^3.0.8",
-    "electron-connect": "^0.6.3",
-    "electron-reload": "^1.2.5",
-    "eslint": "^5.9.0",
-    "eslint-config-prettier": "^3.3.0",
-    "eslint-plugin-prettier": "^3.0.0",
-    "eslint-plugin-react": "^7.11.1",
-    "html-webpack-plugin": "^3.2.0",
-    "mini-css-extract-plugin": "^0.4.4",
-    "prettier": "^1.15.2",
-    "source-map-loader": "^0.2.4",
-    "typescript": "^3.5.2",
-    "webpack-cli": "^3.1.2"
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "css-loader": "^7.1.2",
+    "electron": "39.8.5",
+    "html-webpack-plugin": "^5.6.0",
+    "mini-css-extract-plugin": "^2.9.0",
+    "ts-loader": "^9.5.1",
+    "typescript": "^5.5.4",
+    "webpack": "^5.94.0",
+    "webpack-cli": "^5.1.4"
+  },
+  "engines": {
+    "node": ">=18"
   }
 }
