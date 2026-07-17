@@ -2,12 +2,20 @@
   "name": "torbot-app",
   "version": "1.0.0",
   "description": "Desktop interface for TorBot powered by the GoTor crawl API",
+  "author": "DedSecInside",
   "private": true,
   "main": "src/main.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/KingAkeem/TorBotApp.git"
+  },
   "scripts": {
     "build": "webpack --mode production",
     "dev": "webpack --mode development --watch",
     "electron": "electron .",
+    "package": "npm run build && npm run package:gotor && electron-builder --publish never",
+    "package:dir": "npm run build && npm run package:gotor && electron-builder --dir --publish never",
+    "package:gotor": "node scripts/build-gotor.js --resources",
     "start": "npm run build && electron .",
     "setup:gotor": "node scripts/build-gotor.js",
     "typecheck": "tsc --noEmit",
@@ -22,6 +30,7 @@
     "@types/react-dom": "^18.3.0",
     "css-loader": "^7.1.2",
     "electron": "39.8.5",
+    "electron-builder": "^26.11.1",
     "html-webpack-plugin": "^5.6.0",
     "mini-css-extract-plugin": "^2.9.0",
     "ts-loader": "^9.5.1",
@@ -30,6 +39,53 @@
     "webpack-cli": "^5.1.4"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=22.12"
+  },
+  "build": {
+    "appId": "com.dedsecinside.torbot",
+    "productName": "TorBot",
+    "executableName": "torbot",
+    "artifactName": "TorBot-${version}-${os}-${arch}.${ext}",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "src/main.js",
+      "src/preload.js",
+      "src/gotorBackend.js",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "resources",
+        "to": ".",
+        "filter": [
+          "gotor",
+          "gotor.exe"
+        ]
+      }
+    ],
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "category": "Network"
+    },
+    "mac": {
+      "target": [
+        "dmg"
+      ],
+      "category": "public.app-category.utilities"
+    },
+    "win": {
+      "target": [
+        "nsis"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
   }
 }

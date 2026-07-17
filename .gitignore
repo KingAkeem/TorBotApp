@@ -1,8 +1,10 @@
 # JS Ignores
 node_modules
 dist
+release
+resources/gotor
+resources/gotor.exe
  
 # Golang Ignores
 vendor
-
 

@@ -1,0 +1,106 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  GOTOR_REF: 0c51ae5878c64996baa40e36e68154579aeac293
+
+jobs:
+  verify:
+    name: Verify on Node.js ${{ matrix.node-version }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version:
+          - 22.12.0
+          - 24
+
+    steps:
+      - name: Check out TorBot App
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check types
+        run: npm run typecheck
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build renderer
+        run: npm run build
+
+      - name: Audit production dependencies
+        if: matrix.node-version == 24
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Upload renderer bundle
+        if: matrix.node-version == 24
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: renderer-bundle
+          path: dist
+          if-no-files-found: error
+          retention-days: 7
+
+  package-smoke:
+    name: Package Linux application
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out TorBot App
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+
+      - name: Check out GoTor
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          repository: DedSecInside/gotor
+          ref: ${{ env.GOTOR_REF }}
+          path: gotor
+
+      - name: Set up Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 22.12.0
+          cache: npm
+
+      - name: Set up Go
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6
+        with:
+          go-version-file: gotor/go.mod
+          cache-dependency-path: gotor/go.sum
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Package unpacked application
+        run: npm run package:dir
+        env:
+          GOTOR_DIR: ${{ github.workspace }}/gotor
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"
+
+      - name: Verify bundled GoTor executable
+        run: test -x release/linux-unpacked/resources/gotor
