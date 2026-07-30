@@ -6,6 +6,7 @@ declare global {
       getBackendStatus: () => Promise<{
         available: boolean;
         engine: string;
+        version?: string | null;
         status: string;
         source?: string;
         error?: string;
@@ -33,8 +34,16 @@ declare global {
         useTor: boolean;
         socks5Host: string;
         socks5Port: number;
+        authorizedUseConfirmed: boolean;
       }) => Promise<unknown>;
       cancelCrawl: () => Promise<unknown>;
+      exportReport: (request: {
+        auditId: string;
+        includeEmails: boolean;
+        includePhoneNumbers: boolean;
+        sensitiveDataReviewed: boolean;
+      }) => Promise<{ canceled: boolean; filePath?: string }>;
+      showLatestAudit: () => Promise<void>;
       openExternal: (url: string) => Promise<void>;
     };
   }

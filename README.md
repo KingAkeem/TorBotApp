@@ -71,6 +71,27 @@ Set `GOTOR_API_URL` to use an already-running service instead:
 GOTOR_API_URL=http://127.0.0.1:8081 npm start
 ```
 
+## Crawl safety and audit
+
+Every crawl starts with an intent review showing the normalized target and
+domain, routing mode, crawl depth, Tor endpoints, GoTor source/version signal,
+and backend policy checks. The crawl cannot start until the user confirms that
+the target is owned or explicitly authorized. Main-process validation rejects
+malformed IPC payloads, credential-bearing URLs, non-HTTP schemes, and local,
+private, link-local, or infrastructure target addresses.
+
+Accepted runs produce one write-once JSON artifact under Electron's user-data
+directory at `audit/runs/`. The artifact records intent, bounded crawl
+configuration, backend source, terminal state, page outcomes, skip/failure
+reasons, and source-page provenance for metadata, emails, and phone numbers.
+On Unix-like systems artifacts are created with owner-only permissions and made
+read-only after the write. They can contain sensitive findings and should be
+handled accordingly.
+
+Report export is available from the Intelligence tab. Email and phone fields
+are excluded by default; including either requires an explicit review and
+confirmation before the save dialog opens.
+
 ## Packaging
 
 Create an installer for the current operating system:

@@ -54,6 +54,8 @@
       "src/main.js",
       "src/preload.js",
       "src/gotorBackend.js",
+      "src/auditStore.js",
+      "src/ipcValidation.js",
       "package.json"
     ],
     "extraResources": [

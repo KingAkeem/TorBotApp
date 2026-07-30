@@ -208,6 +208,7 @@ class GotorBackend {
       return {
         available: true,
         engine: health.engine || 'gotor',
+        version: health.version || 'not reported by API',
         status: health.status || 'ok',
         source: this.source,
       };
@@ -215,6 +216,7 @@ class GotorBackend {
       return {
         available: false,
         engine: 'gotor',
+        version: null,
         status: 'unavailable',
         source: this.source,
         error: error instanceof Error ? error.message : String(error),

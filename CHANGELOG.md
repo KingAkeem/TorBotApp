@@ -8,6 +8,10 @@ All notable changes to TorBot App are documented here.
 
 - Reliability-first release scorecard with explicit verification, backend pin,
   signing, target, and manual-check status.
+- Pre-run crawl intent and authorization review.
+- Write-once per-run audit JSON with outcome and extracted-data provenance.
+- Review-before-export controls for extracted email and phone data.
+- Strict IPC validation tests for malformed requests and unsafe targets.
 
 ## 1.0.0 - 2026-07-17
 

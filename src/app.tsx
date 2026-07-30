@@ -3,6 +3,7 @@ import React, { FormEvent, useEffect, useMemo, useState } from 'react';
 type BackendStatus = {
   available: boolean;
   engine: string;
+  version?: string | null;
   status: string;
   source?: string;
   error?: string;
@@ -71,9 +72,22 @@ type CrawlJob = {
   status: 'queued' | 'running' | 'completed' | 'failed' | 'cancelled';
   report?: CrawlReport;
   error?: string;
+  audit?: {
+    id: string;
+    artifactPath: string;
+    createdAt: string;
+  };
 };
 
 type Tab = 'overview' | 'pages' | 'intelligence' | 'tree';
+
+type PendingCrawl = {
+  url: string;
+  depth: number;
+  useTor: boolean;
+  socks5Host: string;
+  socks5Port: number;
+};
 
 const formatBytes = (value?: number) => {
   if (!value || value < 0) return '—';
@@ -167,9 +181,18 @@ function App() {
   const [running, setRunning] = useState(false);
   const [cancelling, setCancelling] = useState(false);
   const [report, setReport] = useState<CrawlReport | null>(null);
+  const [pendingCrawl, setPendingCrawl] = useState<PendingCrawl | null>(null);
+  const [authorizedUseConfirmed, setAuthorizedUseConfirmed] = useState(false);
+  const [audit, setAudit] = useState<CrawlJob['audit']>(undefined);
+  const [exportReview, setExportReview] = useState(false);
+  const [includeEmails, setIncludeEmails] = useState(false);
+  const [includePhoneNumbers, setIncludePhoneNumbers] = useState(false);
+  const [sensitiveDataReviewed, setSensitiveDataReviewed] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [activeTab, setActiveTab] = useState<Tab>('overview');
+  const controlsLocked = running || Boolean(pendingCrawl);
 
   const checkTor = async (host = socks5Host, port = socks5Port) => {
     setCheckingTor(true);
@@ -242,30 +265,47 @@ function App() {
       if (!['http:', 'https:'].includes(parsed.protocol)) {
         throw new Error('Use an HTTP or HTTPS URL.');
       }
-    } catch (validationError) {
-      setError(validationError instanceof Error ? validationError.message : 'Enter a valid URL.');
-      return;
-    }
-
-    setRunning(true);
-    setReport(null);
-    setActiveTab('overview');
-    try {
-      const job = await window.torbot.startCrawl({
-        url,
+      setPendingCrawl({
+        url: parsed.toString(),
         depth,
         useTor,
         socks5Host,
         socks5Port,
+      });
+      setAuthorizedUseConfirmed(false);
+    } catch (validationError) {
+      setError(validationError instanceof Error ? validationError.message : 'Enter a valid URL.');
+    }
+  };
+
+  const startCrawl = async () => {
+    if (!pendingCrawl || !authorizedUseConfirmed) return;
+
+    setRunning(true);
+    setReport(null);
+    setAudit(undefined);
+    setExportReview(false);
+    setActiveTab('overview');
+    const request = pendingCrawl;
+    setPendingCrawl(null);
+    try {
+      const job = await window.torbot.startCrawl({
+        ...request,
+        authorizedUseConfirmed: true,
       }) as CrawlJob;
+      setAudit(job.audit);
       if (job.status === 'completed' && job.report) {
         setReport(job.report);
-        setNotice(`Crawl completed with ${job.report.pages?.length || 0} fetched pages.`);
+        setNotice(
+          `Crawl completed with ${job.report.pages?.length || 0} fetched pages. Audit saved to ${job.audit?.artifactPath}.`,
+        );
       } else if (job.status === 'cancelled') {
         if (job.report) setReport(job.report);
-        setNotice('Crawl cancelled. Partial results are shown when available.');
+        setNotice(`Crawl cancelled. Partial results are shown and the audit was saved to ${job.audit?.artifactPath}.`);
       } else {
-        setError(job.error || `Crawl ended with status “${job.status}”.`);
+        setError(
+          `${job.error || `Crawl ended with status “${job.status}”.`} Audit saved to ${job.audit?.artifactPath}.`,
+        );
       }
     } catch (crawlError) {
       setError(crawlError instanceof Error ? crawlError.message : String(crawlError));
@@ -273,6 +313,37 @@ function App() {
     } finally {
       setRunning(false);
       setCancelling(false);
+    }
+  };
+
+  const exportReport = async () => {
+    if (!audit || !report) return;
+    setExporting(true);
+    setError('');
+    setNotice('');
+    try {
+      const result = await window.torbot.exportReport({
+        auditId: audit.id,
+        includeEmails,
+        includePhoneNumbers,
+        sensitiveDataReviewed,
+      });
+      if (!result.canceled) {
+        setNotice(`Reviewed report exported to ${result.filePath}.`);
+        setExportReview(false);
+      }
+    } catch (exportError) {
+      setError(exportError instanceof Error ? exportError.message : String(exportError));
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const showAudit = async () => {
+    try {
+      await window.torbot.showLatestAudit();
+    } catch (auditError) {
+      setError(auditError instanceof Error ? auditError.message : String(auditError));
     }
   };
 
@@ -409,7 +480,7 @@ function App() {
                 placeholder="http://example.onion"
                 autoComplete="off"
                 required
-                disabled={running}
+                disabled={controlsLocked}
               />
             </label>
 
@@ -422,7 +493,7 @@ function App() {
                   max={10}
                   value={depth}
                   onChange={(event) => setDepth(Number(event.target.value))}
-                  disabled={running}
+                  disabled={controlsLocked}
                 />
               </label>
               <div className="depth-note">
@@ -440,7 +511,7 @@ function App() {
                 type="checkbox"
                 checked={useTor}
                 onChange={(event) => setUseTor(event.target.checked)}
-                disabled={running}
+                disabled={controlsLocked}
               />
               <span className="toggle-track" aria-hidden="true">
                 <span />
@@ -458,7 +529,7 @@ function App() {
                       setSOCKS5Host(event.target.value);
                       setTorStatus(null);
                     }}
-                    disabled={running || !useTor}
+                    disabled={controlsLocked || !useTor}
                   />
                 </label>
                 <label className="field port-field">
@@ -472,13 +543,13 @@ function App() {
                       setSOCKS5Port(Number(event.target.value));
                       setTorStatus(null);
                     }}
-                    disabled={running || !useTor}
+                    disabled={controlsLocked || !useTor}
                   />
                 </label>
               </div>
             </details>
 
-            {!running ? (
+            {!running && !pendingCrawl ? (
               <button
                 className="primary-action"
                 type="submit"
@@ -488,10 +559,10 @@ function App() {
                   (useTor && (!torStatus?.reachable || checkingTor))
                 }
               >
-                <span>Run crawl</span>
+                <span>Review crawl</span>
                 <span aria-hidden="true">→</span>
               </button>
-            ) : (
+            ) : running ? (
               <button
                 className="cancel-action"
                 type="button"
@@ -501,7 +572,7 @@ function App() {
                 <span className="spinner" />
                 {cancelling ? 'Stopping crawl…' : 'Cancel crawl'}
               </button>
-            )}
+            ) : null}
           </form>
 
           {!checkingBackend && !backend?.available && (
@@ -527,6 +598,85 @@ function App() {
             </div>
           )}
 
+          {!running && pendingCrawl && (
+            <div className="intent-review" data-testid="crawl-intent-review">
+              <div className="section-kicker">PRE-RUN SAFETY REVIEW</div>
+              <h2>Confirm crawl intent</h2>
+              <p>
+                Review the exact target, routing, backend source, and policy checks before
+                creating a crawl job.
+              </p>
+
+              <dl className="intent-grid">
+                <div><dt>Target</dt><dd>{pendingCrawl.url}</dd></div>
+                <div><dt>Domain</dt><dd>{new URL(pendingCrawl.url).hostname}</dd></div>
+                <div><dt>Routing</dt><dd>{pendingCrawl.useTor ? 'Tor' : 'Direct'}</dd></div>
+                <div><dt>Crawl depth</dt><dd>{pendingCrawl.depth}</dd></div>
+                <div>
+                  <dt>SOCKS endpoint</dt>
+                  <dd>
+                    {pendingCrawl.useTor
+                      ? `${pendingCrawl.socks5Host}:${pendingCrawl.socks5Port}`
+                      : 'Not used in direct mode'}
+                  </dd>
+                </div>
+                <div>
+                  <dt>Control endpoint</dt>
+                  <dd>
+                    {torStatus?.controlPorts.length
+                      ? torStatus.controlPorts.map((port) => `${torStatus.host}:${port}`).join(', ')
+                      : 'Not detected'}
+                  </dd>
+                </div>
+                <div><dt>GoTor source</dt><dd>{backend?.source || 'Not reported'}</dd></div>
+                <div><dt>GoTor version</dt><dd>{backend?.version || 'Not exposed by API'}</dd></div>
+              </dl>
+
+              <div className="policy-checks" aria-label="Policy and status checks">
+                <div className="passed"><span>✓</span><p>Absolute HTTP/S target</p></div>
+                <div className={backend?.available ? 'passed' : 'failed'}>
+                  <span>{backend?.available ? '✓' : '!'}</span><p>GoTor backend available</p>
+                </div>
+                <div className={!pendingCrawl.useTor || torStatus?.reachable ? 'passed' : 'failed'}>
+                  <span>{!pendingCrawl.useTor || torStatus?.reachable ? '✓' : '!'}</span>
+                  <p>{pendingCrawl.useTor ? 'Tor SOCKS endpoint reachable' : 'Direct mode selected'}</p>
+                </div>
+              </div>
+
+              <label className="authorization-check">
+                <input
+                  type="checkbox"
+                  checked={authorizedUseConfirmed}
+                  onChange={(event) => setAuthorizedUseConfirmed(event.target.checked)}
+                />
+                <span>I confirm I own this target or have explicit authorization to crawl it.</span>
+              </label>
+
+              <div className="review-actions">
+                <button
+                  type="button"
+                  className="secondary-action"
+                  onClick={() => setPendingCrawl(null)}
+                >
+                  Back to settings
+                </button>
+                <button
+                  type="button"
+                  className="primary-action"
+                  onClick={startCrawl}
+                  disabled={
+                    !authorizedUseConfirmed ||
+                    !backend?.available ||
+                    (pendingCrawl.useTor && !torStatus?.reachable)
+                  }
+                >
+                  <span>Start authorized crawl</span>
+                  <span aria-hidden="true">→</span>
+                </button>
+              </div>
+            </div>
+          )}
+
           {running && (
             <div className="running-state">
               <div className="radar" aria-hidden="true">
@@ -548,7 +698,7 @@ function App() {
             </div>
           )}
 
-          {!running && !report && (
+          {!running && !pendingCrawl && !report && (
             <div className="empty-state">
               <div className="empty-grid" aria-hidden="true">
                 <span className="node root-node" />
@@ -584,6 +734,11 @@ function App() {
                 <div className="report-meta">
                   <span>{report.usesTor ? 'TOR' : 'DIRECT'}</span>
                   <strong>{formatDuration(report.durationMs)}</strong>
+                  {audit && (
+                    <button type="button" onClick={showAudit}>
+                      Show audit JSON
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -706,23 +861,103 @@ function App() {
                 )}
 
                 {activeTab === 'intelligence' && (
-                  <div className="intel-grid">
-                    <article className="detail-card">
-                      <div className="card-heading"><span>EMAIL ADDRESSES</span><strong>{emails.length}</strong></div>
-                      <div className="intel-list">
-                        {emails.length
-                          ? emails.map((email) => <code key={email}>{email}</code>)
-                          : <p className="muted">No email addresses found.</p>}
+                  <div>
+                    <div className="intel-export-bar">
+                      <div>
+                        <strong>Sensitive-data export</strong>
+                        <span>Choose and confirm contact fields before writing a JSON report.</span>
                       </div>
-                    </article>
-                    <article className="detail-card">
-                      <div className="card-heading"><span>PHONE NUMBERS</span><strong>{phoneNumbers.length}</strong></div>
-                      <div className="intel-list">
-                        {phoneNumbers.length
-                          ? phoneNumbers.map((phone) => <code key={phone}>{phone}</code>)
-                          : <p className="muted">No phone numbers found.</p>}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIncludeEmails(false);
+                          setIncludePhoneNumbers(false);
+                          setSensitiveDataReviewed(false);
+                          setExportReview(true);
+                        }}
+                        disabled={!audit}
+                      >
+                        Review export
+                      </button>
+                    </div>
+
+                    {exportReview && (
+                      <div className="export-review" data-testid="sensitive-export-review">
+                        <div className="card-heading"><span>EXPORT REVIEW</span><strong>JSON</strong></div>
+                        <label>
+                          <input
+                            type="checkbox"
+                            checked={includeEmails}
+                            onChange={(event) => {
+                              setIncludeEmails(event.target.checked);
+                              setSensitiveDataReviewed(false);
+                            }}
+                          />
+                          <span>Include {emails.length} extracted email {emails.length === 1 ? 'address' : 'addresses'}</span>
+                        </label>
+                        <label>
+                          <input
+                            type="checkbox"
+                            checked={includePhoneNumbers}
+                            onChange={(event) => {
+                              setIncludePhoneNumbers(event.target.checked);
+                              setSensitiveDataReviewed(false);
+                            }}
+                          />
+                          <span>Include {phoneNumbers.length} extracted phone {phoneNumbers.length === 1 ? 'number' : 'numbers'}</span>
+                        </label>
+                        {(includeEmails || includePhoneNumbers) && (
+                          <label className="sensitive-confirmation">
+                            <input
+                              type="checkbox"
+                              checked={sensitiveDataReviewed}
+                              onChange={(event) => setSensitiveDataReviewed(event.target.checked)}
+                            />
+                            <span>I reviewed the selected sensitive fields and intend to export them.</span>
+                          </label>
+                        )}
+                        <div className="review-actions">
+                          <button
+                            type="button"
+                            className="secondary-action"
+                            onClick={() => setExportReview(false)}
+                            disabled={exporting}
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            type="button"
+                            className="primary-action"
+                            onClick={exportReport}
+                            disabled={
+                              exporting ||
+                              ((includeEmails || includePhoneNumbers) && !sensitiveDataReviewed)
+                            }
+                          >
+                            <span>{exporting ? 'Exporting…' : 'Export reviewed JSON'}</span>
+                          </button>
+                        </div>
                       </div>
-                    </article>
+                    )}
+
+                    <div className="intel-grid">
+                      <article className="detail-card">
+                        <div className="card-heading"><span>EMAIL ADDRESSES</span><strong>{emails.length}</strong></div>
+                        <div className="intel-list">
+                          {emails.length
+                            ? emails.map((email) => <code key={email}>{email}</code>)
+                            : <p className="muted">No email addresses found.</p>}
+                        </div>
+                      </article>
+                      <article className="detail-card">
+                        <div className="card-heading"><span>PHONE NUMBERS</span><strong>{phoneNumbers.length}</strong></div>
+                        <div className="intel-list">
+                          {phoneNumbers.length
+                            ? phoneNumbers.map((phone) => <code key={phone}>{phone}</code>)
+                            : <p className="muted">No phone numbers found.</p>}
+                        </div>
+                      </article>
+                    </div>
                   </div>
                 )}
 

@@ -1,85 +1,73 @@
-const { app, BrowserWindow, ipcMain, session, shell } = require('electron');
+const { app, BrowserWindow, dialog, ipcMain, session, shell } = require('electron');
 const fs = require('fs');
 const path = require('path');
+const { RunAuditStore, runCrawlWithAudit } = require('./auditStore');
 const { GotorBackend } = require('./gotorBackend');
+const {
+  buildExportPayload,
+  normalizeCrawlRequest,
+  normalizeExportRequest,
+  normalizeTargetURL,
+  normalizeTorStatusRequest,
+} = require('./ipcValidation');
 
 let mainWindow = null;
+let auditStore = null;
+let latestCompletedRun = null;
 const backend = new GotorBackend({
   appRoot: path.resolve(__dirname, '..'),
   resourcesPath: process.resourcesPath,
 });
 
-function normalizeCrawlRequest(input) {
-  if (!input || typeof input !== 'object') {
-    throw new Error('A crawl request is required.');
-  }
-
-  let parsedURL;
-  try {
-    parsedURL = new URL(String(input.url));
-  } catch {
-    throw new Error('Enter a valid absolute URL.');
-  }
-  if (!['http:', 'https:'].includes(parsedURL.protocol)) {
-    throw new Error('Only HTTP and HTTPS URLs can be crawled.');
-  }
-
-  const depth = Number(input.depth);
-  if (!Number.isInteger(depth) || depth < 0 || depth > 10) {
-    throw new Error('Depth must be a whole number between 0 and 10.');
-  }
-
-  const useTor = input.useTor !== false;
-  const socks5Host = String(input.socks5Host || '127.0.0.1').trim();
-  const socks5Port = Number(input.socks5Port || 9050);
-  if (!socks5Host || socks5Host.length > 255) {
-    throw new Error('Enter a valid SOCKS5 host.');
-  }
-  if (!Number.isInteger(socks5Port) || socks5Port < 1 || socks5Port > 65535) {
-    throw new Error('SOCKS5 port must be between 1 and 65535.');
-  }
-
-  return {
-    url: parsedURL.toString(),
-    depth,
-    useTor,
-    socks5Host,
-    socks5Port,
-    workers: 12,
-    queueSize: 2048,
-    requestsPerSecond: 5,
-    burst: 5,
-    perHostParallel: 2,
-    perHostDelayMs: 100,
-    maxResponseBytes: 5 * 1024 * 1024,
-    allowNonHtml: false,
-    randomizeHeaders: true,
-  };
-}
-
 function registerIPC() {
   ipcMain.handle('backend:status', () => backend.status());
   ipcMain.handle('tor:status', (_event, input = {}) => {
-    const host = String(input.host || '127.0.0.1').trim();
-    const port = Number(input.port || 9050);
-    if (!host || host.length > 255) {
-      throw new Error('Enter a valid Tor SOCKS5 host.');
-    }
-    if (!Number.isInteger(port) || port < 1 || port > 65535) {
-      throw new Error('Tor SOCKS5 port must be between 1 and 65535.');
-    }
+    const { host, port } = normalizeTorStatusRequest(input);
     return backend.torStatus(host, port);
   });
-  ipcMain.handle('crawl:start', (_event, input) => {
-    return backend.runCrawl(normalizeCrawlRequest(input));
+  ipcMain.handle('crawl:start', async (_event, input) => {
+    const normalized = normalizeCrawlRequest(input);
+    const job = await runCrawlWithAudit({ backend, auditStore, normalized });
+    if (job.report) {
+      latestCompletedRun = {
+        auditId: job.audit.id,
+        report: job.report,
+      };
+    }
+    return job;
   });
   ipcMain.handle('crawl:cancel', () => backend.cancelActive());
   ipcMain.handle('external:open', (_event, rawURL) => {
-    const parsedURL = new URL(String(rawURL));
-    if (!['http:', 'https:'].includes(parsedURL.protocol)) {
-      throw new Error('Refusing to open a non-HTTP URL.');
-    }
+    const parsedURL = normalizeTargetURL(rawURL);
     return shell.openExternal(parsedURL.toString());
+  });
+  ipcMain.handle('audit:show-latest', () => {
+    const artifactPath = auditStore.getLatestPath();
+    if (!artifactPath) {
+      throw new Error('No crawl audit artifact is available.');
+    }
+    shell.showItemInFolder(artifactPath);
+  });
+  ipcMain.handle('report:export', async (_event, input) => {
+    const options = normalizeExportRequest(input);
+    if (!latestCompletedRun || latestCompletedRun.auditId !== options.auditId) {
+      throw new Error('The export does not match the latest completed crawl.');
+    }
+    const result = await dialog.showSaveDialog(mainWindow, {
+      title: 'Export reviewed crawl report',
+      defaultPath: `torbot-report-${options.auditId.slice(0, 8)}.json`,
+      filters: [{ name: 'JSON', extensions: ['json'] }],
+      properties: ['createDirectory', 'showOverwriteConfirmation'],
+    });
+    if (result.canceled || !result.filePath) {
+      return { canceled: true };
+    }
+    await fs.promises.writeFile(
+      result.filePath,
+      `${JSON.stringify(buildExportPayload(latestCompletedRun.report, options), null, 2)}\n`,
+      { encoding: 'utf8', mode: 0o600 },
+    );
+    return { canceled: false, filePath: result.filePath };
   });
 }
 
@@ -121,6 +109,7 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
+  auditStore = new RunAuditStore(path.join(app.getPath('userData'), 'audit', 'runs'));
   session.defaultSession.setPermissionRequestHandler((_webContents, _permission, callback) => {
     callback(false);
   });

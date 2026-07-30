@@ -626,6 +626,137 @@ button {
   padding: 34px;
 }
 
+.intent-review {
+  max-width: 850px;
+  margin: 20px auto;
+  padding: 26px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #10141b;
+}
+
+.intent-review h2 {
+  margin: 9px 0 7px;
+  font-size: 25px;
+}
+
+.intent-review > p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.intent-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 20px 0 14px;
+  border: 1px solid var(--line-soft);
+}
+
+.intent-grid > div {
+  min-width: 0;
+  padding: 11px 12px;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.intent-grid > div:nth-child(odd) {
+  border-right: 1px solid var(--line-soft);
+}
+
+.intent-grid dt {
+  margin-bottom: 5px;
+  color: var(--muted);
+  font-size: 8px;
+  text-transform: uppercase;
+}
+
+.intent-grid dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: var(--muted-bright);
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 9px;
+  line-height: 1.45;
+}
+
+.policy-checks {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.policy-checks > div {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 10px;
+  border: 1px solid var(--line-soft);
+  border-radius: 6px;
+  color: var(--muted-bright);
+}
+
+.policy-checks span {
+  color: var(--green);
+  font-size: 11px;
+}
+
+.policy-checks .failed span {
+  color: var(--red);
+}
+
+.policy-checks p {
+  min-width: 0;
+  margin: 0;
+  font-size: 9px;
+}
+
+.authorization-check,
+.export-review > label {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin-top: 13px;
+  color: var(--muted-bright);
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.authorization-check input,
+.export-review input {
+  margin: 2px 0 0;
+  accent-color: var(--accent);
+}
+
+.review-actions {
+  display: grid;
+  grid-template-columns: minmax(150px, 0.7fr) minmax(220px, 1fr);
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.secondary-action {
+  min-height: 46px;
+  cursor: pointer;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted-bright);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.secondary-action:hover:not(:disabled) {
+  border-color: var(--muted);
+  color: var(--text);
+}
+
+.secondary-action:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
 .message-banner {
   position: sticky;
   z-index: 10;
@@ -857,6 +988,21 @@ button {
 
 .report-meta strong {
   color: var(--muted-bright);
+}
+
+.report-meta button,
+.intel-export-bar button {
+  cursor: pointer;
+  border: 0;
+  background: none;
+  color: var(--accent-bright);
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.report-meta button:hover,
+.intel-export-bar button:hover:not(:disabled) {
+  text-decoration: underline;
 }
 
 .summary-grid {
@@ -1148,6 +1294,60 @@ td em {
   gap: 6px;
 }
 
+.intel-export-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+  padding: 11px 13px;
+  border: 1px solid var(--line-soft);
+  border-radius: 7px;
+  background: #10141b;
+}
+
+.intel-export-bar strong,
+.intel-export-bar span {
+  display: block;
+}
+
+.intel-export-bar strong {
+  font-size: 10px;
+}
+
+.intel-export-bar span {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 9px;
+}
+
+.intel-export-bar button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.export-review {
+  margin-bottom: 12px;
+  padding: 15px;
+  border: 1px solid rgba(245, 201, 106, 0.28);
+  border-radius: 7px;
+  background: rgba(245, 201, 106, 0.035);
+}
+
+.export-review .card-heading {
+  margin-bottom: 4px;
+}
+
+.export-review .sensitive-confirmation {
+  padding: 10px;
+  border-left: 2px solid var(--yellow);
+  background: rgba(245, 201, 106, 0.04);
+}
+
+.export-review .review-actions {
+  max-width: 520px;
+}
+
 .intel-list code {
   padding: 9px 10px;
   overflow: hidden;
@@ -1276,6 +1476,10 @@ td em {
 
   .overview-grid,
   .intel-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .policy-checks {
     grid-template-columns: 1fr;
   }
 }
