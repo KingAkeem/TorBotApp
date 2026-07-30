@@ -109,6 +109,13 @@ go vet ./...
 go test -race ./...
 ```
 
+## Release quality
+
+The [release scorecard](docs/release-scorecard.md) records the verification
+evidence, bundled GoTor revision, supported installer targets, signing status,
+and known limitations for the current release candidate. Update its release
+record and complete the included checklist before creating a version tag.
+
 ## GitHub Actions
 
 The CI workflow runs on pull requests, pushes to `master`, and manual

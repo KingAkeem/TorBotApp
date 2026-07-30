@@ -2,6 +2,13 @@
 
 All notable changes to TorBot App are documented here.
 
+## Unreleased
+
+### Added
+
+- Reliability-first release scorecard with explicit verification, backend pin,
+  signing, target, and manual-check status.
+
 ## 1.0.0 - 2026-07-17
 
 ### Added
