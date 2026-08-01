@@ -41,6 +41,10 @@ npm run setup:gotor
 npm start
 ```
 
+Coding agents and contributors should read [AGENTS.md](AGENTS.md) before
+changing the app. It captures the Electron/React boundaries, GoTor backend
+expectations, safe test defaults, and local validation checklist.
+
 `setup:gotor` builds `../gotor/bin/gotor`. The binary is intentionally ignored
 by Git.
 
